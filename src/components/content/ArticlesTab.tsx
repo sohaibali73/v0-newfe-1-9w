@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, BookOpen, Clock, Eye, Trash2, Copy } from 'lucide-react';
+import { Plus, BookOpen, Clock, Tag, Eye, Pencil, Trash2, Copy } from 'lucide-react';
 import { CreationChatModal } from './CreationChatModal';
 
 interface ArticlesTabProps {

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Presentation, Clock, Trash2, Copy, Pencil } from 'lucide-react';
+import { Plus, Presentation, MoreVertical, Clock, Trash2, Copy, Pencil } from 'lucide-react';
 import { CreationChatModal } from './CreationChatModal';
 
 interface SlideDecksTabProps {

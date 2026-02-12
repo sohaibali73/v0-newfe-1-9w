@@ -1,16 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   MessageCircle,
   Presentation,
+  FileText,
   File,
   BarChart3,
+  Settings2,
+  Send,
+  Plus,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Save,
+  Copy,
+  Pencil,
+  X,
+  Check,
   Sliders,
   BookOpen,
   Sparkles,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ContentChat } from '@/components/content/ContentChat';
 import { SlideDecksTab } from '@/components/content/SlideDecksTab';
@@ -21,6 +35,7 @@ import { WritingStyleSettings } from '@/components/content/WritingStyleSettings'
 
 export function ContentPage() {
   const { resolvedTheme } = useTheme();
+  const { user } = useAuth();
   const isDark = resolvedTheme === 'dark';
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
