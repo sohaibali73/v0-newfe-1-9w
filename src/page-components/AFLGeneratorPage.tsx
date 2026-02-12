@@ -731,27 +731,22 @@ export function AFLGeneratorPage() {
         <div style={{ padding: '10px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.background, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '12px', color: colors.textMuted, fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif" }}>Strategy:</span>
-            {(['standalone', 'entry', 'exit'] as const).map(type => (
-              <button
-                key={type}
-                onClick={() => setStrategyType(type)}
-                style={{
-                  padding: '4px 12px',
-                  fontSize: '11px',
-                  fontWeight: strategyType === type ? 700 : 500,
-                  borderRadius: '6px',
-                  border: strategyType === type ? `1.5px solid ${colors.primaryYellow}` : `1px solid ${colors.border}`,
-                  backgroundColor: strategyType === type ? (isDark ? 'rgba(254, 192, 15, 0.15)' : 'rgba(254, 192, 15, 0.1)') : 'transparent',
-                  color: strategyType === type ? colors.primaryYellow : colors.textMuted,
-                  cursor: 'pointer',
-                  fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif",
-                  transition: 'all 0.2s ease',
-                  textTransform: 'capitalize',
-                }}
-              >
-                {type}
-              </button>
-            ))}
+            <button
+              style={{
+                padding: '4px 12px',
+                fontSize: '11px',
+                fontWeight: 700,
+                borderRadius: '6px',
+                border: `1.5px solid ${colors.primaryYellow}`,
+                backgroundColor: isDark ? 'rgba(254, 192, 15, 0.15)' : 'rgba(254, 192, 15, 0.1)',
+                color: colors.primaryYellow,
+                cursor: 'default',
+                fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif",
+                textTransform: 'capitalize',
+              }}
+            >
+              {strategyType}
+            </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* Composite Model Toggle */}
