@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Plus, Presentation, MoreVertical, Clock, Trash2, Copy, Pencil } from 'lucide-react';
-import { CreationChatModal } from './CreationChatModal';
 
 interface SlideDecksTabProps {
   colors: Record<string, string>;
@@ -27,7 +26,6 @@ const PLACEHOLDER_DECKS: SlideDeck[] = [
 export function SlideDecksTab({ colors, isDark }: SlideDecksTabProps) {
   const [decks, setDecks] = useState<SlideDeck[]>(PLACEHOLDER_DECKS);
   const [selectedDeck, setSelectedDeck] = useState<string | null>(null);
-  const [showCreationChat, setShowCreationChat] = useState(false);
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
@@ -49,7 +47,6 @@ export function SlideDecksTab({ colors, isDark }: SlideDecksTabProps) {
           }}
         >
           <button
-            onClick={() => setShowCreationChat(true)}
             style={{
               width: '100%',
               display: 'flex',
@@ -329,15 +326,6 @@ export function SlideDecksTab({ colors, isDark }: SlideDecksTabProps) {
           </div>
         )}
       </div>
-
-      {showCreationChat && (
-        <CreationChatModal
-          colors={colors}
-          isDark={isDark}
-          contentType="slides"
-          onClose={() => setShowCreationChat(false)}
-        />
-      )}
     </div>
   );
 }

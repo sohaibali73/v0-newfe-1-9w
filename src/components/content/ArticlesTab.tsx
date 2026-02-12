@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Plus, BookOpen, Clock, Tag, Eye, Pencil, Trash2, Copy } from 'lucide-react';
-import { CreationChatModal } from './CreationChatModal';
 
 interface ArticlesTabProps {
   colors: Record<string, string>;
@@ -58,7 +57,6 @@ const STATUS_COLORS: Record<string, { text: string; bg: string }> = {
 export function ArticlesTab({ colors, isDark }: ArticlesTabProps) {
   const [articles, setArticles] = useState<Article[]>(PLACEHOLDER_ARTICLES);
   const [selectedArticle, setSelectedArticle] = useState<string | null>(null);
-  const [showCreationChat, setShowCreationChat] = useState(false);
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
@@ -80,7 +78,6 @@ export function ArticlesTab({ colors, isDark }: ArticlesTabProps) {
           }}
         >
           <button
-            onClick={() => setShowCreationChat(true)}
             style={{
               width: '100%',
               display: 'flex',
@@ -357,15 +354,6 @@ export function ArticlesTab({ colors, isDark }: ArticlesTabProps) {
           </div>
         )}
       </div>
-
-      {showCreationChat && (
-        <CreationChatModal
-          colors={colors}
-          isDark={isDark}
-          contentType="articles"
-          onClose={() => setShowCreationChat(false)}
-        />
-      )}
     </div>
   );
 }
