@@ -437,11 +437,17 @@ export function AFLGeneratorPage() {
   const lastIdx = allMessages.length - 1;
   const userName = user?.name || 'You';
 
+  // Stable refs for values used in renderMessage to avoid re-renders
+  const lastIdxRef = useRef(lastIdx);
+  lastIdxRef.current = lastIdx;
+  const isStreamingRef = useRef(isStreaming);
+  isStreamingRef.current = isStreaming;
+
   // --- Render a single message using AI Elements ---
-  const renderMessage = (message: any, idx: number) => {
+  const renderMessage = useCallback((message: any, idx: number) => {
     const parts = message.parts || [{ type: 'text', text: message.content || '' }];
-    const isLast = idx === lastIdx;
-    const msgIsStreaming = isStreaming && isLast && message.role === 'assistant';
+    const isLast = idx === lastIdxRef.current;
+    const msgIsStreaming = isStreamingRef.current && isLast && message.role === 'assistant';
     const fullText = parts.filter((p: any) => p.type === 'text').map((p: any) => p.text || '').join('');
     const toolParts = parts.filter((p: any) => p.type?.startsWith('tool-') || p.type === 'dynamic-tool');
     const hasMultipleTools = toolParts.length >= 2;
