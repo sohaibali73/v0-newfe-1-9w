@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Plus, File, FileText, Clock, Download, Pencil, Trash2, Copy } from 'lucide-react';
+import { CreationChatModal } from './CreationChatModal';
 
 interface DocumentsTabProps {
   colors: Record<string, string>;
@@ -34,6 +35,7 @@ const PLACEHOLDER_DOCS: Document[] = [
 export function DocumentsTab({ colors, isDark }: DocumentsTabProps) {
   const [documents, setDocuments] = useState<Document[]>(PLACEHOLDER_DOCS);
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
+  const [showCreationChat, setShowCreationChat] = useState(false);
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
@@ -55,6 +57,7 @@ export function DocumentsTab({ colors, isDark }: DocumentsTabProps) {
           }}
         >
           <button
+            onClick={() => setShowCreationChat(true)}
             style={{
               width: '100%',
               display: 'flex',
@@ -326,6 +329,15 @@ export function DocumentsTab({ colors, isDark }: DocumentsTabProps) {
           </div>
         )}
       </div>
+
+      {showCreationChat && (
+        <CreationChatModal
+          colors={colors}
+          isDark={isDark}
+          contentType="documents"
+          onClose={() => setShowCreationChat(false)}
+        />
+      )}
     </div>
   );
 }

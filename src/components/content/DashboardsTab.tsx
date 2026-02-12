@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Plus, BarChart3, Clock, Layout, Pencil, Trash2, Copy, TrendingUp, PieChart, Activity } from 'lucide-react';
+import { CreationChatModal } from './CreationChatModal';
 
 interface DashboardsTabProps {
   colors: Record<string, string>;
@@ -33,6 +34,7 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
 export function DashboardsTab({ colors, isDark }: DashboardsTabProps) {
   const [dashboards, setDashboards] = useState<Dashboard[]>(PLACEHOLDER_DASHBOARDS);
   const [selectedDashboard, setSelectedDashboard] = useState<string | null>(null);
+  const [showCreationChat, setShowCreationChat] = useState(false);
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
@@ -54,6 +56,7 @@ export function DashboardsTab({ colors, isDark }: DashboardsTabProps) {
           }}
         >
           <button
+            onClick={() => setShowCreationChat(true)}
             style={{
               width: '100%',
               display: 'flex',
@@ -336,6 +339,15 @@ export function DashboardsTab({ colors, isDark }: DashboardsTabProps) {
           </div>
         )}
       </div>
+
+      {showCreationChat && (
+        <CreationChatModal
+          colors={colors}
+          isDark={isDark}
+          contentType="dashboards"
+          onClose={() => setShowCreationChat(false)}
+        />
+      )}
     </div>
   );
 }
