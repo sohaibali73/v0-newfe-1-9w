@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, File, FileText, Clock, Download, Pencil, Trash2, Copy } from 'lucide-react';
+import { Plus, File, FileText, Clock, Download, Trash2, Copy } from 'lucide-react';
 import { CreationChatModal } from './CreationChatModal';
 
 interface DocumentsTabProps {
