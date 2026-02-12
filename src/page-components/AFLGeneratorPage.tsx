@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Plus, MessageSquare, ArrowUpFromLine, Trash2, ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, Pencil, X, CopyIcon, ThumbsUpIcon, ThumbsDownIcon, Download, Code2, PanelRightClose, PanelRightOpen, Settings2, Zap } from 'lucide-react';
+import { Plus, MessageSquare, ArrowUpFromLine, Trash2, ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, Pencil, X, CopyIcon, ThumbsUpIcon, ThumbsDownIcon, Download, Code2, PanelRightClose, PanelRightOpen, Settings2, Zap, Layers, Sparkles } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
@@ -114,6 +116,18 @@ export function AFLGeneratorPage() {
   });
   const [copied, setCopied] = useState(false);
 
+  // Composite Model Mode
+  const [compositeMode, setCompositeMode] = useState(false);
+  const [strategies, setStrategies] = useState<{
+    id: string;
+    name: string;
+    code: string;
+    description?: string;
+    strategyType?: string;
+    createdAt: Date;
+  }[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('composite');
+
   // Feedback
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
@@ -175,6 +189,8 @@ export function AFLGeneratorPage() {
   const isStreaming = status === 'streaming' || status === 'submitted';
 
   // --- Auto-extract AFL code from the latest assistant message ---
+  const lastExtractedCodeRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (streamMessages.length === 0) return;
     // Find the last assistant message
@@ -183,23 +199,59 @@ export function AFLGeneratorPage() {
       if (msg.role !== 'assistant') continue;
       const parts = msg.parts || [{ type: 'text', text: msg.content || '' }];
       const fullText = parts.filter((p: any) => p.type === 'text').map((p: any) => p.text || '').join('');
-      const code = extractAFLCode(fullText);
-      if (code) {
-        setGeneratedCode(code);
-        if (!codePanelOpen && !isMobile) setCodePanelOpen(true);
-        break;
-      }
-      // Also check tool outputs for AFL code
+
+      let extractedCode: string | null = null;
+      let extractedDescription: string | undefined;
+      let extractedStrategyType: string | undefined;
+
+      // Check tool outputs for AFL code first (more structured)
       for (const part of parts) {
-        if (part.type === 'tool-generate_afl_code' && part.state === 'output-available' && part.output?.code) {
-          setGeneratedCode(part.output.code);
-          if (!codePanelOpen && !isMobile) setCodePanelOpen(true);
-          break;
+        if (part.type === 'tool-generate_afl_code' && part.state === 'output-available') {
+          const aflCode = (part as any).output?.code || (part as any).output?.afl_code;
+          if (aflCode) {
+            extractedCode = aflCode;
+            extractedDescription = (part as any).output?.description;
+            extractedStrategyType = (part as any).output?.strategy_type;
+            break;
+          }
         }
+      }
+
+      // Fall back to text extraction
+      if (!extractedCode) {
+        extractedCode = extractAFLCode(fullText);
+      }
+
+      if (extractedCode) {
+        // Skip if this is the same code we already processed
+        if (lastExtractedCodeRef.current === extractedCode) break;
+        lastExtractedCodeRef.current = extractedCode;
+
+        if (compositeMode) {
+          // In composite mode, add as a new strategy tab
+          setStrategies(prev => {
+            const alreadyExists = prev.some(s => s.code === extractedCode);
+            if (alreadyExists) return prev;
+            const newStrategy = {
+              id: `strategy-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+              name: `Strategy ${prev.length + 1}`,
+              code: extractedCode!,
+              description: extractedDescription,
+              strategyType: extractedStrategyType,
+              createdAt: new Date(),
+            };
+            // Auto-switch to the new strategy tab
+            setTimeout(() => setActiveTab(newStrategy.id), 0);
+            return [...prev, newStrategy];
+          });
+        } else {
+          setGeneratedCode(extractedCode);
+        }
+        if (!codePanelOpen && !isMobile) setCodePanelOpen(true);
       }
       break;
     }
-  }, [streamMessages, isMobile]);
+  }, [streamMessages, isMobile, compositeMode]);
 
   // --- Sync conversationIdRef ---
   useEffect(() => {
@@ -267,10 +319,12 @@ export function AFLGeneratorPage() {
       setConversations(prev => [newConv, ...prev]);
       setSelectedConversation(newConv);
       conversationIdRef.current = newConv.id;
-      setMessages([]);
-      setGeneratedCode('');
-      setPageError('');
-    } catch (err) { setPageError(err instanceof Error ? err.message : 'Failed'); }
+  setMessages([]);
+  setGeneratedCode('');
+  setStrategies([]);
+  setActiveTab('composite');
+  setPageError('');
+  } catch (err) { setPageError(err instanceof Error ? err.message : 'Failed'); }
   };
 
   const handleDeleteConversation = async (id: string) => {
@@ -283,18 +337,92 @@ export function AFLGeneratorPage() {
   };
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(generatedCode);
+    const codeToCopy = getActiveCode();
+    if (!codeToCopy) return;
+    navigator.clipboard.writeText(codeToCopy);
     setCopied(true);
     toast.success('Code copied!');
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // --- Composite code generation (auto-template) ---
+  const compositeCode = useMemo(() => {
+    if (strategies.length === 0) {
+      return '// ===== COMPOSITE MODEL =====\n// No strategies yet. Generate individual strategies to build the composite.\n// Each strategy you generate will appear as a separate tab.\n// The composite code will auto-update as you add strategies.\n';
+    }
+
+    const lines: string[] = [];
+    lines.push('// ===== COMPOSITE MODEL =====');
+    lines.push(`// Auto-generated from ${strategies.length} ${strategies.length === 1 ? 'strategy' : 'strategies'}`);
+    lines.push(`// Generated: ${new Date().toLocaleDateString()}`);
+    lines.push('');
+    lines.push('// ----- Include Individual Strategy Signals -----');
+    lines.push('');
+
+    strategies.forEach((s, i) => {
+      lines.push(`// --- ${s.name}${s.strategyType ? ` (${s.strategyType})` : ''} ---`);
+      lines.push(`StaticVarSet("Buy_${i + 1}", Nz(StaticVarGet("Buy_${i + 1}")));`);
+      lines.push(`StaticVarSet("Sell_${i + 1}", Nz(StaticVarGet("Sell_${i + 1}")));`);
+      lines.push(`StaticVarSet("Short_${i + 1}", Nz(StaticVarGet("Short_${i + 1}")));`);
+      lines.push(`StaticVarSet("Cover_${i + 1}", Nz(StaticVarGet("Cover_${i + 1}")));`);
+      lines.push('');
+    });
+
+    lines.push('// ----- Composite Scoring (Majority Voting) -----');
+    lines.push('CompositeBuy = 0;');
+    lines.push('CompositeSell = 0;');
+    lines.push('CompositeShort = 0;');
+    lines.push('CompositeCover = 0;');
+    lines.push('');
+
+    strategies.forEach((_, i) => {
+      lines.push(`CompositeBuy += Nz(StaticVarGet("Buy_${i + 1}"));`);
+      lines.push(`CompositeSell += Nz(StaticVarGet("Sell_${i + 1}"));`);
+      lines.push(`CompositeShort += Nz(StaticVarGet("Short_${i + 1}"));`);
+      lines.push(`CompositeCover += Nz(StaticVarGet("Cover_${i + 1}"));`);
+    });
+
+    lines.push('');
+    const threshold = Math.max(1, Math.ceil(strategies.length / 2));
+    lines.push(`Threshold = ${threshold}; // Majority voting (${threshold} of ${strategies.length})`);
+    lines.push('');
+    lines.push('Buy = CompositeBuy >= Threshold;');
+    lines.push('Sell = CompositeSell >= Threshold;');
+    lines.push('Short = CompositeShort >= Threshold;');
+    lines.push('Cover = CompositeCover >= Threshold;');
+    lines.push('');
+    lines.push('// ----- Execution -----');
+    lines.push('Buy = ExRem(Buy, Sell);');
+    lines.push('Sell = ExRem(Sell, Buy);');
+    lines.push('Short = ExRem(Short, Cover);');
+    lines.push('Cover = ExRem(Cover, Short);');
+
+    return lines.join('\n');
+  }, [strategies]);
+
+  // --- Get the active code (respects composite mode) ---
+  const getActiveCode = useCallback(() => {
+    if (!compositeMode) return generatedCode;
+    if (activeTab === 'composite') return compositeCode;
+    return strategies.find(s => s.id === activeTab)?.code || '';
+  }, [compositeMode, generatedCode, activeTab, compositeCode, strategies]);
+
+  // --- Remove a strategy tab ---
+  const handleRemoveStrategy = useCallback((id: string) => {
+    setStrategies(prev => prev.filter(s => s.id !== id));
+    if (activeTab === id) setActiveTab('composite');
+  }, [activeTab]);
+
   const handleDownloadCode = () => {
-    const blob = new Blob([generatedCode], { type: 'text/plain' });
+    const codeToDownload = getActiveCode();
+    const fileName = compositeMode
+      ? (activeTab === 'composite' ? 'composite_strategy.afl' : `${strategies.find(s => s.id === activeTab)?.name?.replace(/\s+/g, '_').toLowerCase() || 'strategy'}.afl`)
+      : 'strategy.afl';
+    const blob = new Blob([codeToDownload], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'strategy.afl';
+    a.download = fileName;
     a.click();
     URL.revokeObjectURL(url);
     toast.success('AFL file downloaded');
@@ -625,7 +753,31 @@ export function AFLGeneratorPage() {
               </button>
             ))}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Composite Model Toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Switch
+                checked={compositeMode}
+                onCheckedChange={(checked) => {
+                  setCompositeMode(checked);
+                  if (checked && !codePanelOpen && !isMobile) setCodePanelOpen(true);
+                }}
+                className="data-[state=checked]:bg-[#FEC00F] h-4 w-8"
+              />
+              <span style={{
+                fontSize: '11px',
+                color: compositeMode ? colors.primaryYellow : colors.textMuted,
+                fontWeight: compositeMode ? 600 : 400,
+                fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif",
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap',
+              }}>
+                Composite
+              </span>
+            </div>
+
+            <div style={{ width: '1px', height: '18px', backgroundColor: colors.border }} />
+
             <button
               onClick={() => setCodePanelOpen(!codePanelOpen)}
               style={{ background: 'none', border: `1px solid ${colors.border}`, borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: colors.textMuted, fontSize: '11px', fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif", transition: 'all 0.2s ease' }}
@@ -814,23 +966,36 @@ export function AFLGeneratorPage() {
       </div>
 
       {/* ===== CODE PANEL (Right Side) ===== */}
-      {codePanelOpen && (
-        <div style={{ width: isMobile ? '100%' : '420px', backgroundColor: colors.codePanelBg, borderLeft: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', height: '100dvh', flexShrink: 0, transition: 'width 0.3s ease', position: isMobile ? 'absolute' : 'relative', right: 0, top: 0, zIndex: isMobile ? 200 : 1 }}>
+      {codePanelOpen && (() => {
+        const activeCode = getActiveCode();
+        const hasCode = compositeMode ? (strategies.length > 0 || activeTab === 'composite') : !!generatedCode;
+        const isCompositeTab = compositeMode && activeTab === 'composite';
+
+        return (
+        <div style={{ width: isMobile ? '100%' : '460px', backgroundColor: colors.codePanelBg, borderLeft: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', height: '100dvh', flexShrink: 0, transition: 'width 0.3s ease', position: isMobile ? 'absolute' : 'relative', right: 0, top: 0, zIndex: isMobile ? 200 : 1 }}>
           {/* Panel Header */}
-          <div style={{ padding: '16px 20px', borderBottom: `2px solid ${colors.primaryYellow}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: isDark ? 'rgba(254, 192, 15, 0.05)' : 'rgba(254, 192, 15, 0.08)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Code2 size={18} color={colors.primaryYellow} />
-              <h3 style={{ fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif", fontSize: '13px', fontWeight: 700, color: colors.text, margin: 0, letterSpacing: '0.5px', textTransform: 'uppercase' }}>AFL CODE</h3>
-              <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', backgroundColor: isDark ? 'rgba(254, 192, 15, 0.15)' : 'rgba(254, 192, 15, 0.1)', color: colors.primaryYellow, fontWeight: 600, fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif", textTransform: 'uppercase' }}>{strategyType}</span>
+          <div style={{ padding: '12px 16px', borderBottom: compositeMode ? `1px solid ${colors.border}` : `2px solid ${colors.primaryYellow}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: isDark ? 'rgba(254, 192, 15, 0.05)' : 'rgba(254, 192, 15, 0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {compositeMode ? <Layers size={16} color={colors.primaryYellow} /> : <Code2 size={16} color={colors.primaryYellow} />}
+              <h3 style={{ fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif", fontSize: '13px', fontWeight: 700, color: colors.text, margin: 0, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                {compositeMode ? 'COMPOSITE' : 'AFL CODE'}
+              </h3>
+              {compositeMode ? (
+                <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', backgroundColor: isDark ? 'rgba(254, 192, 15, 0.15)' : 'rgba(254, 192, 15, 0.1)', color: colors.primaryYellow, fontWeight: 600, fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif" }}>
+                  {strategies.length} {strategies.length === 1 ? 'strategy' : 'strategies'}
+                </span>
+              ) : (
+                <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', backgroundColor: isDark ? 'rgba(254, 192, 15, 0.15)' : 'rgba(254, 192, 15, 0.1)', color: colors.primaryYellow, fontWeight: 600, fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif", textTransform: 'uppercase' }}>{strategyType}</span>
+              )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <button onClick={() => setShowSettings(!showSettings)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', transition: 'background-color 0.2s' }} title="Backtest settings">
                 <Settings2 size={14} color={showSettings ? colors.primaryYellow : colors.textMuted} />
               </button>
-              <button onClick={handleCopyCode} disabled={!generatedCode} style={{ background: 'none', border: 'none', cursor: generatedCode ? 'pointer' : 'default', padding: '6px', borderRadius: '6px', opacity: generatedCode ? 1 : 0.3 }} title="Copy code">
+              <button onClick={handleCopyCode} disabled={!activeCode} style={{ background: 'none', border: 'none', cursor: activeCode ? 'pointer' : 'default', padding: '6px', borderRadius: '6px', opacity: activeCode ? 1 : 0.3 }} title="Copy code">
                 <CopyIcon size={14} color={colors.textMuted} />
               </button>
-              <button onClick={handleDownloadCode} disabled={!generatedCode} style={{ background: 'none', border: 'none', cursor: generatedCode ? 'pointer' : 'default', padding: '6px', borderRadius: '6px', opacity: generatedCode ? 1 : 0.3 }} title="Download .afl">
+              <button onClick={handleDownloadCode} disabled={!activeCode} style={{ background: 'none', border: 'none', cursor: activeCode ? 'pointer' : 'default', padding: '6px', borderRadius: '6px', opacity: activeCode ? 1 : 0.3 }} title="Download .afl">
                 <Download size={14} color={colors.textMuted} />
               </button>
               <button onClick={() => setCodePanelOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px' }} title="Close panel">
@@ -838,6 +1003,114 @@ export function AFLGeneratorPage() {
               </button>
             </div>
           </div>
+
+          {/* === Composite Tab Bar === */}
+          {compositeMode && (
+            <div style={{ borderBottom: `2px solid ${colors.primaryYellow}`, backgroundColor: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.02)' }}>
+              <ScrollArea className="w-full">
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', padding: '8px 12px 0', minWidth: 'max-content' }}>
+                  {/* Composite tab (always first, not closable) */}
+                  <button
+                    onClick={() => setActiveTab('composite')}
+                    style={{
+                      padding: '7px 14px',
+                      fontSize: '11px',
+                      fontWeight: activeTab === 'composite' ? 700 : 500,
+                      borderRadius: '8px 8px 0 0',
+                      border: activeTab === 'composite' ? `1px solid ${colors.primaryYellow}` : `1px solid transparent`,
+                      borderBottom: 'none',
+                      backgroundColor: activeTab === 'composite' ? (isDark ? 'rgba(254, 192, 15, 0.12)' : 'rgba(254, 192, 15, 0.1)') : 'transparent',
+                      color: activeTab === 'composite' ? colors.primaryYellow : colors.textMuted,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif",
+                      transition: 'all 0.15s ease',
+                      whiteSpace: 'nowrap',
+                      position: 'relative',
+                    }}
+                  >
+                    <Layers size={11} />
+                    Composite
+                    {strategies.length > 0 && (
+                      <span style={{
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        backgroundColor: colors.primaryYellow,
+                        color: colors.darkGray,
+                        borderRadius: '6px',
+                        padding: '1px 5px',
+                        lineHeight: '14px',
+                        minWidth: '14px',
+                        textAlign: 'center',
+                      }}>
+                        {strategies.length}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Individual strategy tabs */}
+                  {strategies.map((strategy) => (
+                    <button
+                      key={strategy.id}
+                      onClick={() => setActiveTab(strategy.id)}
+                      style={{
+                        padding: '7px 10px',
+                        fontSize: '11px',
+                        fontWeight: activeTab === strategy.id ? 700 : 500,
+                        borderRadius: '8px 8px 0 0',
+                        border: activeTab === strategy.id ? `1px solid ${colors.border}` : `1px solid transparent`,
+                        borderBottom: 'none',
+                        backgroundColor: activeTab === strategy.id ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') : 'transparent',
+                        color: activeTab === strategy.id ? colors.text : colors.textMuted,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif",
+                        transition: 'all 0.15s ease',
+                        whiteSpace: 'nowrap',
+                        position: 'relative',
+                      }}
+                    >
+                      <Code2 size={10} />
+                      <span style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{strategy.name}</span>
+                      {strategy.strategyType && (
+                        <span style={{ fontSize: '8px', opacity: 0.5, textTransform: 'uppercase' }}>{strategy.strategyType.slice(0, 4)}</span>
+                      )}
+                      {/* Close button */}
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveStrategy(strategy.id);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); handleRemoveStrategy(strategy.id); }
+                        }}
+                        style={{
+                          opacity: 0.4,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '2px',
+                          borderRadius: '3px',
+                          transition: 'all 0.15s ease',
+                        }}
+                        onMouseOver={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.backgroundColor = 'rgba(255,0,0,0.15)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.opacity = '0.4'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                      >
+                        <X size={10} />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </div>
+          )}
 
           {/* Backtest Settings (collapsible) */}
           {showSettings && (
@@ -866,85 +1139,163 @@ export function AFLGeneratorPage() {
 
           {/* Monaco Editor */}
           <div style={{ flex: 1, minHeight: 0 }}>
-            {generatedCode ? (
-              <Editor
-                height="100%"
-                language="cpp"
-                theme={isDark ? 'vs-dark' : 'light'}
-                value={generatedCode}
-                onChange={(value) => setGeneratedCode(value || '')}
-                onMount={(editor) => { editorRef.current = editor; }}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 13,
-                  lineNumbers: 'on',
-                  scrollBeyondLastLine: false,
-                  wordWrap: 'on',
-                  padding: { top: 16, bottom: 16 },
-                  renderLineHighlight: 'line',
-                  smoothScrolling: true,
-                  cursorBlinking: 'smooth',
-                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                  fontLigatures: true,
-                }}
-              />
+            {(compositeMode || generatedCode) ? (
+              <>
+                {/* Read-only indicator for composite tab */}
+                {isCompositeTab && strategies.length > 0 && (
+                  <div style={{
+                    padding: '6px 16px',
+                    backgroundColor: isDark ? 'rgba(254, 192, 15, 0.06)' : 'rgba(254, 192, 15, 0.05)',
+                    borderBottom: `1px solid ${colors.border}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <span style={{ fontSize: '10px', color: colors.textMuted, fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif" }}>
+                      Auto-generated template (read-only)
+                    </span>
+                  </div>
+                )}
+                <Editor
+                  height="100%"
+                  language="cpp"
+                  theme={isDark ? 'vs-dark' : 'light'}
+                  value={compositeMode ? activeCode : generatedCode}
+                  onChange={(value) => {
+                    if (compositeMode) {
+                      // Composite tab is read-only; individual strategy tabs are editable
+                      if (activeTab !== 'composite') {
+                        setStrategies(prev => prev.map(s => s.id === activeTab ? { ...s, code: value || '' } : s));
+                      }
+                    } else {
+                      setGeneratedCode(value || '');
+                    }
+                  }}
+                  onMount={(editor) => { editorRef.current = editor; }}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 13,
+                    lineNumbers: 'on',
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    padding: { top: 16, bottom: 16 },
+                    renderLineHighlight: 'line',
+                    smoothScrolling: true,
+                    cursorBlinking: 'smooth',
+                    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                    fontLigatures: true,
+                    readOnly: isCompositeTab,
+                  }}
+                />
+              </>
             ) : (
               <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '40px' }}>
-                <Code2 size={40} color={colors.border} />
+                {compositeMode ? <Layers size={40} color={colors.border} /> : <Code2 size={40} color={colors.border} />}
                 <p style={{ fontSize: '13px', color: colors.textMuted, textAlign: 'center', fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif", lineHeight: 1.5 }}>
-                  Generated AFL code will appear here. Describe your strategy in the chat to get started.
+                  {compositeMode
+                    ? 'Generate individual strategies in the chat. Each will appear as a tab, and the composite code will combine them automatically.'
+                    : 'Generated AFL code will appear here. Describe your strategy in the chat to get started.'}
                 </p>
               </div>
             )}
           </div>
 
-          {/* Quick Actions */}
-          {generatedCode && (
-            <div style={{ padding: '12px 16px', borderTop: `1px solid ${colors.border}`, display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {[
-                { label: 'Optimize', prompt: `Optimize this AFL code for better performance:\n\`\`\`afl\n${generatedCode}\n\`\`\`` },
-                { label: 'Debug', prompt: `Debug this AFL code and find potential issues:\n\`\`\`afl\n${generatedCode}\n\`\`\`` },
-                { label: 'Explain', prompt: `Explain this AFL code line by line:\n\`\`\`afl\n${generatedCode}\n\`\`\`` },
-                { label: 'Feedback', prompt: '' },
-              ].map(({ label, prompt }) => (
-                <button
-                  key={label}
-                  onClick={() => {
-                    if (label === 'Feedback') {
-                      setShowFeedbackModal(true);
-                      return;
-                    }
-                    setInput(prompt);
-                  }}
-                  style={{
-                    padding: '5px 12px',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    borderRadius: '6px',
-                    border: `1px solid ${colors.border}`,
-                    backgroundColor: 'transparent',
-                    color: colors.textMuted,
-                    cursor: 'pointer',
-                    fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif",
-                    transition: 'all 0.2s ease',
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = colors.primaryYellow; e.currentTarget.style.color = colors.primaryYellow; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = colors.border; e.currentTarget.style.color = colors.textMuted; }}
-                >
-                  {label}
-                </button>
-              ))}
+          {/* Composite AI Merge Footer */}
+          {compositeMode && isCompositeTab && strategies.length >= 2 && (
+            <div style={{
+              padding: '10px 16px',
+              borderTop: `1px solid ${colors.border}`,
+              backgroundColor: isDark ? 'rgba(254, 192, 15, 0.03)' : 'rgba(254, 192, 15, 0.04)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <button
+                onClick={() => {
+                  const allCodes = strategies.map((s, i) => `### ${s.name}${s.strategyType ? ` (${s.strategyType})` : ''}:\n\`\`\`afl\n${s.code}\n\`\`\``).join('\n\n');
+                  setInput(`Intelligently merge these ${strategies.length} individual AFL strategies into a single composite strategy. Use a proper voting/scoring system to combine their Buy/Sell/Short/Cover signals with appropriate weighting:\n\n${allCodes}`);
+                }}
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  border: `1px solid ${colors.primaryYellow}`,
+                  backgroundColor: isDark ? 'rgba(254, 192, 15, 0.1)' : 'rgba(254, 192, 15, 0.08)',
+                  color: colors.primaryYellow,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif",
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = isDark ? 'rgba(254, 192, 15, 0.2)' : 'rgba(254, 192, 15, 0.15)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = isDark ? 'rgba(254, 192, 15, 0.1)' : 'rgba(254, 192, 15, 0.08)'; }}
+              >
+                <Sparkles size={12} />
+                AI Merge Strategies
+              </button>
+              <span style={{ fontSize: '10px', color: colors.textMuted, fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif" }}>
+                or use auto-generated template above
+              </span>
             </div>
           )}
+
+          {/* Quick Actions */}
+          {(() => {
+            const codeForActions = compositeMode ? activeCode : generatedCode;
+            if (!codeForActions) return null;
+            // Don't show optimize/debug/explain for the composite auto-template, only for individual strategies or non-composite mode
+            if (compositeMode && isCompositeTab) return null;
+            return (
+              <div style={{ padding: '12px 16px', borderTop: `1px solid ${colors.border}`, display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {[
+                  { label: 'Optimize', prompt: `Optimize this AFL code for better performance:\n\`\`\`afl\n${codeForActions}\n\`\`\`` },
+                  { label: 'Debug', prompt: `Debug this AFL code and find potential issues:\n\`\`\`afl\n${codeForActions}\n\`\`\`` },
+                  { label: 'Explain', prompt: `Explain this AFL code line by line:\n\`\`\`afl\n${codeForActions}\n\`\`\`` },
+                  { label: 'Feedback', prompt: '' },
+                ].map(({ label, prompt }) => (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      if (label === 'Feedback') {
+                        setShowFeedbackModal(true);
+                        return;
+                      }
+                      setInput(prompt);
+                    }}
+                    style={{
+                      padding: '5px 12px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      border: `1px solid ${colors.border}`,
+                      backgroundColor: 'transparent',
+                      color: colors.textMuted,
+                      cursor: 'pointer',
+                      fontFamily: "var(--font-quicksand), 'Quicksand', sans-serif",
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = colors.primaryYellow; e.currentTarget.style.color = colors.primaryYellow; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = colors.border; e.currentTarget.style.color = colors.textMuted; }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
         </div>
-      )}
+        );
+      })()}
 
       {/* Feedback Modal */}
       {showFeedbackModal && (
         <FeedbackModal
           isOpen={showFeedbackModal}
           onClose={() => setShowFeedbackModal(false)}
-          generatedCode={generatedCode}
+          generatedCode={getActiveCode() || generatedCode}
           conversationId={selectedConversation?.id}
         />
       )}
