@@ -15,6 +15,7 @@ import {
   ChevronRight,
   BookOpen,
   Lock,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -25,6 +26,7 @@ const navItems = [
   { name: 'DASHBOARD', href: '/dashboard', icon: LayoutDashboard },
   { name: 'AFL GENERATOR', href: '/afl', icon: Code2 },
   { name: 'CHAT', href: '/chat', icon: MessageCircle },
+  { name: 'CONTENT', href: '/content', icon: Sparkles },
   { name: 'TRAINING', href: '/training', icon: BookOpen },
   { name: 'KNOWLEDGE BASE', href: '/knowledge', icon: Database },
   { name: 'BACKTEST', href: '/backtest', icon: TrendingUp },
