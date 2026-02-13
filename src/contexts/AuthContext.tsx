@@ -1,15 +1,16 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/api';
+import { storage } from '@/lib/storage';
+import { logger } from '@/lib/logger';
 
 interface User {
   id: string;
   email: string;
   name?: string;
   nickname?: string;
-  is_admin?: boolean;
   created_at?: string;
 }
 
@@ -32,7 +33,7 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -43,7 +44,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = storage.getItem('auth_token');
       if (!token) {
         setLoading(false);
         return;
@@ -55,8 +56,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(userData);
       }
     } catch (error) {
-      localStorage.removeItem('auth_token');
-      console.error('Auth check failed:', error);
+      storage.removeItem('auth_token');
+      logger.error('Auth check failed', error);
     } finally {
       setLoading(false);
     }
@@ -76,7 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       router.push('/dashboard');
     } catch (error) {
-      console.error('Login failed:', error);
+      logger.error('Login failed', error);
       throw error;
     }
   };
@@ -101,7 +102,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       router.push('/dashboard');
     } catch (error) {
-      console.error('Registration failed:', error);
+      logger.error('Registration failed', error);
       throw error;
     }
   };
@@ -110,11 +111,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       // Clear local state
       apiClient.logout();
-      localStorage.removeItem('auth_token');
+      storage.removeItem('auth_token');
       setUser(null);
       router.push('/login');
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error', error);
     }
   };
 
@@ -127,4 +128,4 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       {children}
     </AuthContext.Provider>
   );
-};
+}

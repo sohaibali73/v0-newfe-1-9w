@@ -614,7 +614,7 @@ export function AFLGeneratorPage() {
         )}
       </AIMessage>
     );
-  };
+  }, [lastIdxRef, isStreamingRef, userName, logo, isDark, colors, handleCopyMessage, setShowFeedbackModal, status, stripReactCodeBlocks]);
 
   // --- RENDER ---
   return (

@@ -13,8 +13,6 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  BookOpen,
-  Lock,
   Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,11 +25,9 @@ const navItems = [
   { name: 'AFL GENERATOR', href: '/afl', icon: Code2 },
   { name: 'CHAT', href: '/chat', icon: MessageCircle },
   { name: 'CONTENT', href: '/content', icon: Sparkles },
-  { name: 'TRAINING', href: '/training', icon: BookOpen },
   { name: 'KNOWLEDGE BASE', href: '/knowledge', icon: Database },
   { name: 'BACKTEST', href: '/backtest', icon: TrendingUp },
   { name: 'REVERSE ENGINEER', href: '/reverse-engineer', icon: Zap },
-  { name: 'ADMIN', href: '/admin', icon: Lock },
   { name: 'SETTINGS', href: '/settings', icon: Settings },
 ];
 

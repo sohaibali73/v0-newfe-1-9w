@@ -6,7 +6,6 @@ export interface User {
   email: string;
   name: string;
   nickname?: string;
-  is_admin?: boolean;
   created_at: string;
 }
 
@@ -330,89 +329,6 @@ export interface SuggestionReviewRequest {
   priority?: number;
 }
 
-// ==================== ANALYTICS TYPES ====================
-
-export interface AnalyticsOverview {
-  users: {
-    total: number;
-    new_today?: number;
-    active_today?: number;
-  };
-  code_generation: {
-    total_codes: number;
-    today?: number;
-  };
-  feedback: {
-    total: number;
-    average_rating?: number;
-    corrections: number;
-    praise: number;
-    pending_review: number;
-  };
-  training: {
-    total_examples: number;
-    active_examples: number;
-    pending_suggestions: number;
-  };
-}
-
-export interface AnalyticsTrends {
-  period: string;
-  data: {
-    date: string;
-    users?: number;
-    codes?: number;
-    feedback?: number;
-  }[];
-}
-
-export interface LearningCurve {
-  period: string;
-  data: {
-    date: string;
-    quality_score?: number;
-    corrections?: number;
-    codes_generated?: number;
-  }[];
-}
-
-export interface PopularPattern {
-  id: string;
-  title: string;
-  training_type: TrainingType;
-  usage_count: number;
-  category: TrainingCategory;
-}
-
-// ==================== ADMIN TYPES ====================
-
-export interface AdminStatus {
-  status: string;
-  admin_id: string;
-  stats: {
-    total_users: number;
-    total_documents: number;
-    training: TrainingStats;
-  };
-}
-
-export interface AdminUser {
-  id: string;
-  email: string;
-  name?: string;
-  nickname?: string;
-  is_admin: boolean;
-  created_at: string;
-  last_login?: string;
-  codes_generated?: number;
-  feedback_submitted?: number;
-}
-
-export interface AdminConfig {
-  admin_emails: string[];
-  features: Record<string, boolean>;
-}
-
 // ==================== TRAINING TEST TYPES ====================
 
 export interface TrainingTestRequest {
@@ -432,13 +348,6 @@ export interface TrainingTestResult {
   };
   training_context_used?: string;
   differences_detected: boolean;
-}
-
-export interface TrainingEffectiveness {
-  total_corrections: number;
-  correction_rate: number;
-  quality_improvement: number;
-  most_effective_rules: TrainingData[];
 }
 
 // ==================== KNOWLEDGE BASE TYPES ====================
