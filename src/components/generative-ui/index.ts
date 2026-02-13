@@ -83,5 +83,23 @@ export { OptionsSnapshot } from './OptionsSnapshot';
 // NEW: Presentation Card (create_presentation tool)
 export { PresentationCard } from './PresentationCard';
 
+// NEW: Live Sports Scores (get_live_scores tool)
+export { LiveSportsScores } from './LiveSportsScores';
+
+// NEW: Search Trends (get_search_trends tool)
+export { SearchTrends } from './SearchTrends';
+
+// NEW: LinkedIn Post Preview (create_linkedin_post tool)
+export { LinkedInPost } from './LinkedInPost';
+
+// NEW: Website Preview (preview_website tool)
+export { WebsitePreview } from './WebsitePreview';
+
+// NEW: Food Order (order_food tool)
+export { FoodOrder } from './FoodOrder';
+
+// NEW: Flight Tracker (track_flight tool)
+export { FlightTracker } from './FlightTracker';
+
 // Legacy React component wrapper
 export { default as ReactComponent } from './ReactComponent';

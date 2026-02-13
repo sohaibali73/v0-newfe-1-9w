@@ -19,6 +19,12 @@ const toolMeta: Record<string, { icon: React.ReactNode; label: string; color: st
   debug_afl_code: { icon: <Bug size={16} />, label: 'Debugging AFL code...', color: '#818cf8' },
   explain_afl_code: { icon: <BookOpen size={16} />, label: 'Explaining AFL code...', color: '#3b82f6' },
   sanity_check_afl: { icon: <Shield size={16} />, label: 'Running AFL sanity check...', color: '#22c55e' },
+  get_live_scores: { icon: <Zap size={16} />, label: 'Fetching live scores...', color: '#f97316' },
+  get_search_trends: { icon: <Globe size={16} />, label: 'Loading search trends...', color: '#7c3aed' },
+  create_linkedin_post: { icon: <Globe size={16} />, label: 'Creating LinkedIn post...', color: '#0077B5' },
+  preview_website: { icon: <Globe size={16} />, label: 'Generating website preview...', color: '#3b82f6' },
+  order_food: { icon: <Zap size={16} />, label: 'Finding food options...', color: '#FEC00F' },
+  track_flight: { icon: <Globe size={16} />, label: 'Tracking flight...', color: '#3b82f6' },
 };
 
 interface ToolLoadingProps {

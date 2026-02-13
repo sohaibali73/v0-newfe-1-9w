@@ -68,6 +68,12 @@ import {
   BacktestResults,
   OptionsSnapshot,
   PresentationCard,
+  LiveSportsScores,
+  SearchTrends,
+  LinkedInPost,
+  WebsitePreview,
+  FoodOrder,
+  FlightTracker,
 } from '@/components/generative-ui';
 
 const logo = '/yellowlogo.png';
@@ -818,6 +824,62 @@ export function ChatPage() {
                   case 'input-streaming': case 'input-available': return <ToolLoading key={pIdx} toolName="create_presentation" input={part.input} />;
                   case 'output-available': return <PresentationCard key={pIdx} {...(typeof part.output === 'object' ? part.output : {})} />;
                   case 'output-error': return <div key={pIdx} style={{ padding: '12px', backgroundColor: 'rgba(220,38,38,0.1)', borderRadius: '12px', color: '#DC2626', fontSize: '13px' }}>Presentation error: {part.errorText}</div>;
+                  default: return null;
+                }
+
+              // ===== 6 NEW LIFESTYLE / UTILITY GEN UI TOOLS =====
+
+              // Live Sports Scores
+              case 'tool-get_live_scores':
+                switch (part.state) {
+                  case 'input-streaming': case 'input-available': return <ToolLoading key={pIdx} toolName="get_live_scores" input={part.input} />;
+                  case 'output-available': return <LiveSportsScores key={pIdx} {...(typeof part.output === 'object' ? part.output : {})} />;
+                  case 'output-error': return <div key={pIdx} style={{ padding: '12px', backgroundColor: 'rgba(220,38,38,0.1)', borderRadius: '12px', color: '#DC2626', fontSize: '13px' }}>Scores error: {part.errorText}</div>;
+                  default: return null;
+                }
+
+              // Search Trends
+              case 'tool-get_search_trends':
+                switch (part.state) {
+                  case 'input-streaming': case 'input-available': return <ToolLoading key={pIdx} toolName="get_search_trends" input={part.input} />;
+                  case 'output-available': return <SearchTrends key={pIdx} {...(typeof part.output === 'object' ? part.output : {})} />;
+                  case 'output-error': return <div key={pIdx} style={{ padding: '12px', backgroundColor: 'rgba(220,38,38,0.1)', borderRadius: '12px', color: '#DC2626', fontSize: '13px' }}>Trends error: {part.errorText}</div>;
+                  default: return null;
+                }
+
+              // LinkedIn Post
+              case 'tool-create_linkedin_post':
+                switch (part.state) {
+                  case 'input-streaming': case 'input-available': return <ToolLoading key={pIdx} toolName="create_linkedin_post" input={part.input} />;
+                  case 'output-available': return <LinkedInPost key={pIdx} {...(typeof part.output === 'object' ? part.output : {})} />;
+                  case 'output-error': return <div key={pIdx} style={{ padding: '12px', backgroundColor: 'rgba(220,38,38,0.1)', borderRadius: '12px', color: '#DC2626', fontSize: '13px' }}>LinkedIn error: {part.errorText}</div>;
+                  default: return null;
+                }
+
+              // Website Preview
+              case 'tool-preview_website':
+                switch (part.state) {
+                  case 'input-streaming': case 'input-available': return <ToolLoading key={pIdx} toolName="preview_website" input={part.input} />;
+                  case 'output-available': return <WebsitePreview key={pIdx} {...(typeof part.output === 'object' ? part.output : {})} />;
+                  case 'output-error': return <div key={pIdx} style={{ padding: '12px', backgroundColor: 'rgba(220,38,38,0.1)', borderRadius: '12px', color: '#DC2626', fontSize: '13px' }}>Preview error: {part.errorText}</div>;
+                  default: return null;
+                }
+
+              // Food Order
+              case 'tool-order_food':
+                switch (part.state) {
+                  case 'input-streaming': case 'input-available': return <ToolLoading key={pIdx} toolName="order_food" input={part.input} />;
+                  case 'output-available': return <FoodOrder key={pIdx} {...(typeof part.output === 'object' ? part.output : {})} />;
+                  case 'output-error': return <div key={pIdx} style={{ padding: '12px', backgroundColor: 'rgba(220,38,38,0.1)', borderRadius: '12px', color: '#DC2626', fontSize: '13px' }}>Food order error: {part.errorText}</div>;
+                  default: return null;
+                }
+
+              // Flight Tracker
+              case 'tool-track_flight':
+                switch (part.state) {
+                  case 'input-streaming': case 'input-available': return <ToolLoading key={pIdx} toolName="track_flight" input={part.input} />;
+                  case 'output-available': return <FlightTracker key={pIdx} {...(typeof part.output === 'object' ? part.output : {})} />;
+                  case 'output-error': return <div key={pIdx} style={{ padding: '12px', backgroundColor: 'rgba(220,38,38,0.1)', borderRadius: '12px', color: '#DC2626', fontSize: '13px' }}>Flight error: {part.errorText}</div>;
                   default: return null;
                 }
 
