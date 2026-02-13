@@ -58,8 +58,8 @@ const sections = [
 
 export function SettingsPage() {
   const router = useRouter();
-  const { theme, setTheme, resolvedTheme, accentColor, setAccentColor } = useTheme();
-  const { fontSize, setFontSize } = useFontSize();
+  const { theme, setTheme, resolvedTheme, setAccentColor } = useTheme();
+  const { setFontSize } = useFontSize();
   const { isMobile, isTablet } = useResponsive();
   const [activeSection, setActiveSection] = useState('profile');
   const [saved, setSaved] = useState(false);
@@ -91,7 +91,6 @@ export function SettingsPage() {
     },
   });
 
-  // Load settings from localStorage on mount and sync theme from context
   useEffect(() => {
     const savedSettings = localStorage.getItem('user_settings');
     if (savedSettings) {
@@ -102,19 +101,13 @@ export function SettingsPage() {
         console.error('Failed to parse settings:', e);
       }
     }
-
-    // Load user info from token/API
     const userInfo = localStorage.getItem('user_info');
     if (userInfo) {
       try {
         const user = JSON.parse(userInfo);
         setSettings(prev => ({
           ...prev,
-          profile: {
-            ...prev.profile,
-            name: user.name || '',
-            email: user.email || '',
-          },
+          profile: { ...prev.profile, name: user.name || '', email: user.email || '' },
         }));
       } catch (e) {
         console.error('Failed to parse user info:', e);
@@ -122,7 +115,6 @@ export function SettingsPage() {
     }
   }, []);
 
-  // Sync theme from context to settings state
   useEffect(() => {
     setSettings(prev => ({
       ...prev,
@@ -130,25 +122,20 @@ export function SettingsPage() {
     }));
   }, [theme]);
 
-  // Theme-aware colors
   const colors = {
-    background: isDark ? '#121212' : '#ffffff',
-    cardBg: isDark ? '#1E1E1E' : '#f5f5f5',
-    inputBg: isDark ? '#2A2A2A' : '#ffffff',
-    border: isDark ? '#424242' : '#e0e0e0',
+    background: isDark ? '#121212' : '#F5F5F5',
+    cardBg: isDark ? '#1E1E1E' : '#FFFFFF',
+    inputBg: isDark ? '#2A2A2A' : '#F8F8F8',
+    border: isDark ? '#2E2E2E' : '#E5E5E5',
     text: isDark ? '#FFFFFF' : '#212121',
     textMuted: isDark ? '#9E9E9E' : '#757575',
-    textSecondary: isDark ? '#757575' : '#9E9E9E',
-    hoverBg: isDark ? '#2A2A2A' : '#e8e8e8',
+    hoverBg: isDark ? '#262626' : '#F0F0F0',
+    accent: '#FEC00F',
   };
 
   const handleSave = () => {
-    // Save to localStorage
     localStorage.setItem('user_settings', JSON.stringify(settings));
-    
-    // Apply theme using the context
     setTheme(settings.appearance.theme as 'light' | 'dark' | 'system');
-    
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -167,41 +154,18 @@ export function SettingsPage() {
   };
 
   const updateProfile = (field: string, value: string) => {
-    setSettings(prev => ({
-      ...prev,
-      profile: { ...prev.profile, [field]: value },
-    }));
+    setSettings(prev => ({ ...prev, profile: { ...prev.profile, [field]: value } }));
   };
-
   const updateApiKeys = (field: string, value: string) => {
-    setSettings(prev => ({
-      ...prev,
-      apiKeys: { ...prev.apiKeys, [field]: value },
-    }));
+    setSettings(prev => ({ ...prev, apiKeys: { ...prev.apiKeys, [field]: value } }));
   };
-
   const updateAppearance = (field: string, value: string) => {
-    setSettings(prev => ({
-      ...prev,
-      appearance: { ...prev.appearance, [field]: value },
-    }));
-    
-    // Apply accent color immediately if it's being changed
-    if (field === 'accentColor') {
-      setAccentColor(value);
-    }
-    
-    // Apply font size immediately if it's being changed
-    if (field === 'fontSize') {
-      setFontSize(value as 'small' | 'medium' | 'large');
-    }
+    setSettings(prev => ({ ...prev, appearance: { ...prev.appearance, [field]: value } }));
+    if (field === 'accentColor') setAccentColor(value);
+    if (field === 'fontSize') setFontSize(value as 'small' | 'medium' | 'large');
   };
-
   const updateNotifications = (field: string, value: boolean) => {
-    setSettings(prev => ({
-      ...prev,
-      notifications: { ...prev.notifications, [field]: value },
-    }));
+    setSettings(prev => ({ ...prev, notifications: { ...prev.notifications, [field]: value } }));
   };
 
   const themeOptions = [
@@ -219,677 +183,858 @@ export function SettingsPage() {
     { value: '#EC4899', label: 'Pink' },
   ];
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    height: '48px',
-    padding: '0 16px',
-    backgroundColor: colors.inputBg,
-    border: `1px solid ${colors.border}`,
-    borderRadius: '8px',
-    color: colors.text,
-    fontSize: '14px',
-    fontFamily: "'Quicksand', sans-serif",
-    outline: 'none',
-    boxSizing: 'border-box',
-    transition: 'background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontFamily: "'Rajdhani', sans-serif",
-    fontSize: '12px',
-    fontWeight: 600,
-    color: colors.text,
-    letterSpacing: '1px',
-    marginBottom: '8px',
-    transition: 'color 0.3s ease',
-  };
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: colors.background,
-      padding: isMobile ? '20px' : (isTablet ? '32px' : '48px'),
-      fontFamily: "'Quicksand', sans-serif",
-      transition: 'background-color 0.3s ease',
-    }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: colors.background,
+        fontFamily: "'Quicksand', sans-serif",
+        transition: 'background-color 0.3s ease',
+      }}
+    >
       {/* Header */}
-      <div style={{ marginBottom: isMobile ? '24px' : '32px' }}>
-        <h1 style={{
-          fontFamily: "'Rajdhani', sans-serif",
-          fontSize: isMobile ? '28px' : '36px',
-          fontWeight: 700,
-          color: colors.text,
-          letterSpacing: '1.5px',
-          marginBottom: '12px',
-          transition: 'color 0.3s ease',
-          lineHeight: 1.2,
-        }}>
-          SETTINGS
-        </h1>
-        <p style={{ 
-          color: colors.textMuted, 
-          fontSize: isMobile ? '15px' : '16px', 
-          margin: 0,
-          lineHeight: 1.6,
-        }}>
-          Manage your account settings and preferences
-        </p>
-      </div>
-
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: isMobile ? '1fr' : (isTablet ? '240px 1fr' : '280px 1fr'), 
-        gap: isMobile ? '20px' : '24px' 
-      }}>
-        {/* Sidebar */}
-        <div style={{
-          backgroundColor: colors.cardBg,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '12px',
-          padding: '16px',
-          height: 'fit-content',
-          transition: 'background-color 0.3s ease, border-color 0.3s ease',
-        }}>
-          {sections.map((section) => {
-            const Icon = section.icon;
-            const isActive = activeSection === section.id;
-            return (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '14px 16px',
-                  marginBottom: '4px',
-                  backgroundColor: isActive ? '#FEC00F' : 'transparent',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s ease',
-                }}
-              >
-                <Icon size={20} color={isActive ? '#212121' : colors.textMuted} />
-                <span style={{
-                  fontFamily: "'Rajdhani', sans-serif",
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: isActive ? '#212121' : colors.text,
-                  letterSpacing: '0.5px',
-                }}>
-                  {section.label}
-                </span>
-              </button>
-            );
-          })}
-
-          <div style={{ borderTop: `1px solid ${colors.border}`, marginTop: '16px', paddingTop: '16px' }}>
-            <button
-              onClick={handleLogout}
+      <div
+        style={{
+          background: isDark
+            ? 'linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%)'
+            : 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
+          borderBottom: `1px solid ${colors.border}`,
+          padding: isMobile ? '28px 20px' : '48px 32px',
+          transition: 'background 0.3s ease',
+        }}
+      >
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
+            <div
               style={{
-                width: '100%',
+                width: '52px',
+                height: '52px',
+                borderRadius: '14px',
+                backgroundColor: 'rgba(254, 192, 15, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
-                padding: '14px 16px',
-                backgroundColor: 'transparent',
-                border: '1px solid #DC2626',
-                borderRadius: '8px',
-                cursor: 'pointer',
+                justifyContent: 'center',
               }}
             >
-              <LogOut size={20} color="#DC2626" />
-              <span style={{
-                fontFamily: "'Rajdhani', sans-serif",
-                fontSize: '13px',
-                fontWeight: 600,
-                color: '#DC2626',
-              }}>
-                LOGOUT
-              </span>
-            </button>
+              <Settings size={28} color="#FEC00F" />
+            </div>
+            <div>
+              <h1
+                style={{
+                  fontFamily: "'Rajdhani', sans-serif",
+                  fontSize: isMobile ? '28px' : '40px',
+                  fontWeight: 700,
+                  color: colors.text,
+                  letterSpacing: '1.5px',
+                  lineHeight: 1.1,
+                  margin: 0,
+                }}
+              >
+                SETTINGS
+              </h1>
+            </div>
           </div>
+          <p
+            style={{
+              color: colors.textMuted,
+              fontSize: isMobile ? '14px' : '16px',
+              lineHeight: 1.7,
+              maxWidth: '600px',
+              margin: 0,
+            }}
+          >
+            Manage your account, appearance, and security preferences
+          </p>
         </div>
+      </div>
 
-        {/* Content */}
-        <div style={{
-          backgroundColor: colors.cardBg,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '12px',
-          padding: '32px',
-          transition: 'background-color 0.3s ease, border-color 0.3s ease',
-        }}>
-          {/* Profile Section */}
-          {activeSection === 'profile' && (
-            <div>
-              <h2 style={{
-                fontFamily: "'Rajdhani', sans-serif",
-                fontSize: '20px',
-                fontWeight: 600,
-                color: colors.text,
-                marginBottom: '8px',
-                marginTop: 0,
-              }}>
-                PROFILE SETTINGS
-              </h2>
-              <p style={{ color: colors.textMuted, fontSize: '14px', marginBottom: '32px' }}>
-                Update your personal information
-              </p>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
-                <div style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #FEC00F 0%, #FFD740 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <span style={{
-                    fontFamily: "'Rajdhani', sans-serif",
-                    fontSize: '32px',
-                    fontWeight: 700,
-                    color: '#212121',
-                  }}>
-                    {settings.profile.name.charAt(0).toUpperCase() || 'U'}
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
-                <div>
-                  <label style={labelStyle}>FULL NAME</label>
-                  <input
-                    type="text"
-                    value={settings.profile.name}
-                    onChange={(e) => updateProfile('name', e.target.value)}
-                    style={inputStyle}
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>NICKNAME</label>
-                  <input
-                    type="text"
-                    value={settings.profile.nickname}
-                    onChange={(e) => updateProfile('nickname', e.target.value)}
-                    placeholder="What should we call you?"
-                    style={inputStyle}
-                  />
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={labelStyle}>EMAIL ADDRESS</label>
-                  <input
-                    type="email"
-                    value={settings.profile.email}
-                    onChange={(e) => updateProfile('email', e.target.value)}
-                    style={inputStyle}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* API Keys Section */}
-          {activeSection === 'api-keys' && (
-            <div>
-              <h2 style={{
-                fontFamily: "'Rajdhani', sans-serif",
-                fontSize: '20px',
-                fontWeight: 600,
-                color: colors.text,
-                marginBottom: '8px',
-                marginTop: 0,
-              }}>
-                API KEYS
-              </h2>
-              <p style={{ color: colors.textMuted, fontSize: '14px', marginBottom: '32px' }}>
-                Manage your API keys for AI services
-              </p>
-
-              <div style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '12px',
-                padding: '16px',
-                backgroundColor: 'rgba(254, 192, 15, 0.1)',
-                border: '1px solid #FEC00F',
-                borderRadius: '8px',
-                marginBottom: '32px',
-              }}>
-                <Shield size={20} color="#FEC00F" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <p style={{ color: '#E0E0E0', fontSize: '13px', lineHeight: 1.5, margin: 0 }}>
-                  Your API keys are encrypted and stored securely.
-                </p>
-              </div>
-
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  CLAUDE API KEY
-                  <span style={{
-                    padding: '2px 8px',
-                    backgroundColor: '#2D7F3E',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    color: '#FFFFFF',
-                  }}>
-                    REQUIRED
-                  </span>
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showClaudeKey ? 'text' : 'password'}
-                    value={settings.apiKeys.claudeApiKey}
-                    onChange={(e) => updateApiKeys('claudeApiKey', e.target.value)}
-                    placeholder="sk-ant-..."
-                    style={{ ...inputStyle, paddingRight: '48px' }}
-                  />
+      {/* Content */}
+      <div
+        style={{
+          padding: isMobile ? '24px 20px' : '32px',
+          maxWidth: '1400px',
+          margin: '0 auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : isTablet ? '220px 1fr' : '260px 1fr',
+            gap: '20px',
+          }}
+        >
+          {/* Sidebar Navigation */}
+          <div
+            style={{
+              backgroundColor: colors.cardBg,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '14px',
+              padding: '12px',
+              height: 'fit-content',
+              transition: 'background-color 0.3s ease, border-color 0.3s ease',
+            }}
+          >
+            <nav style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: '4px', overflowX: isMobile ? 'auto' : 'visible' }}>
+              {sections.map((section) => {
+                const Icon = section.icon;
+                const isActive = activeSection === section.id;
+                return (
                   <button
-                    type="button"
-                    onClick={() => setShowClaudeKey(!showClaudeKey)}
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
                     style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: isMobile ? '10px 16px' : '12px 16px',
+                      backgroundColor: isActive ? colors.accent : 'transparent',
                       border: 'none',
+                      borderRadius: '10px',
                       cursor: 'pointer',
-                      color: '#757575',
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap',
+                      width: isMobile ? 'auto' : '100%',
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) e.currentTarget.style.backgroundColor = colors.hoverBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
-                    {showClaudeKey ? <EyeOff size={20} /> : <Eye size={20} />}
+                    <Icon size={18} color={isActive ? '#212121' : colors.textMuted} />
+                    <span
+                      style={{
+                        fontFamily: "'Rajdhani', sans-serif",
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: isActive ? '#212121' : colors.text,
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      {section.label}
+                    </span>
                   </button>
-                </div>
-                <p style={{ color: '#757575', fontSize: '12px', marginTop: '8px' }}>
-                  Get your key from{' '}
-                  <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#FEC00F', textDecoration: 'none' }}>
-                    console.anthropic.com <ExternalLink size={12} style={{ display: 'inline' }} />
-                  </a>
-                </p>
-              </div>
+                );
+              })}
+            </nav>
 
+            {!isMobile && (
+              <div style={{ borderTop: `1px solid ${colors.border}`, marginTop: '12px', paddingTop: '12px' }}>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '12px 16px',
+                    backgroundColor: 'transparent',
+                    border: `1px solid rgba(220, 38, 38, 0.3)`,
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.08)';
+                    e.currentTarget.style.borderColor = '#DC2626';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.borderColor = 'rgba(220, 38, 38, 0.3)';
+                  }}
+                >
+                  <LogOut size={18} color="#DC2626" />
+                  <span
+                    style={{
+                      fontFamily: "'Rajdhani', sans-serif",
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#DC2626',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    LOGOUT
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Main Content Panel */}
+          <div
+            style={{
+              backgroundColor: colors.cardBg,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '14px',
+              padding: isMobile ? '24px 20px' : '32px',
+              transition: 'background-color 0.3s ease, border-color 0.3s ease',
+            }}
+          >
+            {/* ─── Profile ──────────────────────────────────────────────────── */}
+            {activeSection === 'profile' && (
               <div>
-                <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  TAVILY API KEY
-                  <span style={{
-                    padding: '2px 8px',
-                    backgroundColor: '#424242',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    color: '#9E9E9E',
-                  }}>
-                    OPTIONAL
-                  </span>
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showTavilyKey ? 'text' : 'password'}
-                    value={settings.apiKeys.tavilyApiKey}
-                    onChange={(e) => updateApiKeys('tavilyApiKey', e.target.value)}
-                    placeholder="tvly-..."
-                    style={{ ...inputStyle, paddingRight: '48px' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowTavilyKey(!showTavilyKey)}
+                <SectionHeader
+                  title="PROFILE SETTINGS"
+                  desc="Update your personal information"
+                  colors={colors}
+                />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
+                  <div
                     style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#757575',
+                      width: '72px',
+                      height: '72px',
+                      borderRadius: '16px',
+                      backgroundColor: 'rgba(254, 192, 15, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    {showTavilyKey ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
+                    <span
+                      style={{
+                        fontFamily: "'Rajdhani', sans-serif",
+                        fontSize: '28px',
+                        fontWeight: 700,
+                        color: colors.accent,
+                      }}
+                    >
+                      {settings.profile.name.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                  <div>
+                    <p
+                      style={{
+                        fontFamily: "'Rajdhani', sans-serif",
+                        fontSize: '18px',
+                        fontWeight: 600,
+                        color: colors.text,
+                        margin: '0 0 4px 0',
+                      }}
+                    >
+                      {settings.profile.name || 'Your Name'}
+                    </p>
+                    <p style={{ color: colors.textMuted, fontSize: '13px', margin: 0 }}>
+                      {settings.profile.email || 'your@email.com'}
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                    gap: '20px',
+                  }}
+                >
+                  <FieldGroup label="FULL NAME" colors={colors}>
+                    <StyledInput
+                      type="text"
+                      value={settings.profile.name}
+                      onChange={(e) => updateProfile('name', e.target.value)}
+                      colors={colors}
+                      isDark={isDark}
+                    />
+                  </FieldGroup>
+                  <FieldGroup label="NICKNAME" colors={colors}>
+                    <StyledInput
+                      type="text"
+                      value={settings.profile.nickname}
+                      onChange={(e) => updateProfile('nickname', e.target.value)}
+                      placeholder="What should we call you?"
+                      colors={colors}
+                      isDark={isDark}
+                    />
+                  </FieldGroup>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <FieldGroup label="EMAIL ADDRESS" colors={colors}>
+                      <StyledInput
+                        type="email"
+                        value={settings.profile.email}
+                        onChange={(e) => updateProfile('email', e.target.value)}
+                        colors={colors}
+                        isDark={isDark}
+                      />
+                    </FieldGroup>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Appearance Section */}
-          {activeSection === 'appearance' && (
-            <div>
-              <h2 style={{
-                fontFamily: "'Rajdhani', sans-serif",
-                fontSize: '20px',
-                fontWeight: 600,
-                color: colors.text,
-                marginBottom: '8px',
-                marginTop: 0,
-              }}>
-                APPEARANCE
-              </h2>
-              <p style={{ color: colors.textMuted, fontSize: '14px', marginBottom: '32px' }}>
-                Customize the look and feel
-              </p>
+            {/* ─── API Keys ─────────────────────────────────────────────────── */}
+            {activeSection === 'api-keys' && (
+              <div>
+                <SectionHeader
+                  title="API KEYS"
+                  desc="Manage your API keys for AI services"
+                  colors={colors}
+                />
 
-              <div style={{ marginBottom: '32px' }}>
-                <label style={{ ...labelStyle, marginBottom: '16px' }}>THEME</label>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '16px' }}>
-                  {themeOptions.map((themeOption) => {
-                    const Icon = themeOption.icon;
-                    const isSelected = settings.appearance.theme === themeOption.value;
-                    return (
-                      <button
-                        key={themeOption.value}
-                        onClick={() => updateAppearance('theme', themeOption.value)}
-                        style={{
-                          padding: '24px 16px',
-                          backgroundColor: isSelected ? 'rgba(254, 192, 15, 0.1)' : colors.inputBg,
-                          border: `2px solid ${isSelected ? '#FEC00F' : colors.border}`,
-                          borderRadius: '12px',
-                          cursor: 'pointer',
-                          textAlign: 'center',
-                          transition: 'background-color 0.3s ease, border-color 0.3s ease',
-                        }}
-                      >
-                        <Icon size={32} color={isSelected ? '#FEC00F' : colors.textMuted} style={{ marginBottom: '12px' }} />
-                        <p style={{
-                          fontFamily: "'Rajdhani', sans-serif",
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          color: isSelected ? colors.text : colors.textMuted,
-                          marginBottom: '4px',
-                        }}>
-                          {themeOption.label.toUpperCase()}
-                        </p>
-                        <p style={{ color: colors.textMuted, fontSize: '12px', margin: 0 }}>
-                          {themeOption.desc}
-                        </p>
-                        {isSelected && (
-                          <div style={{
-                            width: '24px',
-                            height: '24px',
-                            backgroundColor: '#FEC00F',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '12px auto 0',
-                          }}>
-                            <Check size={14} color="#212121" />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px',
+                    padding: '16px 20px',
+                    backgroundColor: 'rgba(254, 192, 15, 0.06)',
+                    border: `1px solid rgba(254, 192, 15, 0.2)`,
+                    borderRadius: '12px',
+                    marginBottom: '32px',
+                  }}
+                >
+                  <Shield size={18} color={colors.accent} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <p style={{ color: colors.textMuted, fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
+                    Your API keys are encrypted and stored securely. They are never shared or exposed to third parties.
+                  </p>
                 </div>
-              </div>
 
-              <div style={{ marginBottom: '32px' }}>
-                <label style={{ ...labelStyle, marginBottom: '16px' }}>ACCENT COLOR</label>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  {accentColors.map((color) => {
-                    const isSelected = settings.appearance.accentColor === color.value;
-                    return (
+                <div style={{ display: 'grid', gap: '24px' }}>
+                  <FieldGroup
+                    label="CLAUDE API KEY"
+                    badge={{ text: 'REQUIRED', color: '#22c55e' }}
+                    colors={colors}
+                  >
+                    <div style={{ position: 'relative' }}>
+                      <StyledInput
+                        type={showClaudeKey ? 'text' : 'password'}
+                        value={settings.apiKeys.claudeApiKey}
+                        onChange={(e) => updateApiKeys('claudeApiKey', e.target.value)}
+                        placeholder="sk-ant-..."
+                        colors={colors}
+                        isDark={isDark}
+                        style={{ paddingRight: '48px' }}
+                      />
                       <button
-                        key={color.value}
-                        onClick={() => updateAppearance('accentColor', color.value)}
-                        title={color.label}
+                        type="button"
+                        onClick={() => setShowClaudeKey(!showClaudeKey)}
                         style={{
-                          width: '48px',
-                          height: '48px',
-                          backgroundColor: color.value,
-                          border: `3px solid ${isSelected ? '#FFFFFF' : 'transparent'}`,
-                          borderRadius: '12px',
+                          position: 'absolute',
+                          right: '14px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
                           cursor: 'pointer',
+                          color: colors.textMuted,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          padding: '4px',
                         }}
                       >
-                        {isSelected && <Check size={20} color="#212121" />}
+                        {showClaudeKey ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
+                    </div>
+                    <p style={{ color: colors.textMuted, fontSize: '12px', marginTop: '8px' }}>
+                      Get your key from{' '}
+                      <a
+                        href="https://console.anthropic.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: colors.accent, textDecoration: 'none', fontWeight: 600 }}
+                      >
+                        console.anthropic.com <ExternalLink size={11} style={{ display: 'inline', verticalAlign: 'middle' }} />
+                      </a>
+                    </p>
+                  </FieldGroup>
 
-              <div>
-                <label style={{ ...labelStyle, marginBottom: '16px' }}>FONT SIZE</label>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  {['small', 'medium', 'large'].map((size) => {
-                    const isSelected = settings.appearance.fontSize === size;
-                    return (
+                  <FieldGroup
+                    label="TAVILY API KEY"
+                    badge={{ text: 'OPTIONAL', color: colors.textMuted }}
+                    colors={colors}
+                  >
+                    <div style={{ position: 'relative' }}>
+                      <StyledInput
+                        type={showTavilyKey ? 'text' : 'password'}
+                        value={settings.apiKeys.tavilyApiKey}
+                        onChange={(e) => updateApiKeys('tavilyApiKey', e.target.value)}
+                        placeholder="tvly-..."
+                        colors={colors}
+                        isDark={isDark}
+                        style={{ paddingRight: '48px' }}
+                      />
                       <button
-                        key={size}
-                        onClick={() => updateAppearance('fontSize', size)}
+                        type="button"
+                        onClick={() => setShowTavilyKey(!showTavilyKey)}
                         style={{
-                          padding: '12px 24px',
-                          backgroundColor: isSelected ? '#FEC00F' : colors.inputBg,
-                          border: `1px solid ${isSelected ? '#FEC00F' : colors.border}`,
-                          borderRadius: '8px',
+                          position: 'absolute',
+                          right: '14px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
                           cursor: 'pointer',
-                          fontFamily: "'Rajdhani', sans-serif",
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: isSelected ? '#212121' : colors.text,
-                          transition: 'background-color 0.3s ease, border-color 0.3s ease',
+                          color: colors.textMuted,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '4px',
                         }}
                       >
-                        {size.toUpperCase()}
+                        {showTavilyKey ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
-                    );
-                  })}
+                    </div>
+                  </FieldGroup>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Notifications Section */}
-          {activeSection === 'notifications' && (
-            <div>
-              <h2 style={{
-                fontFamily: "'Rajdhani', sans-serif",
-                fontSize: '20px',
-                fontWeight: 600,
-                color: colors.text,
-                marginBottom: '8px',
-                marginTop: 0,
-              }}>
-                NOTIFICATIONS
-              </h2>
-              <p style={{ color: colors.textMuted, fontSize: '14px', marginBottom: '32px' }}>
-                Configure how you receive notifications
-              </p>
+            {/* ─── Appearance ───────────────────────────────────────────────── */}
+            {activeSection === 'appearance' && (
+              <div>
+                <SectionHeader
+                  title="APPEARANCE"
+                  desc="Customize the look and feel"
+                  colors={colors}
+                />
 
-              {[
-                { key: 'emailNotifications', label: 'Email Notifications', desc: 'Receive notifications via email' },
-                { key: 'codeGenComplete', label: 'Code Generation Complete', desc: 'Notify when AFL code generation finishes' },
-                { key: 'backtestComplete', label: 'Backtest Analysis Complete', desc: 'Notify when backtest analysis finishes' },
-                { key: 'weeklyDigest', label: 'Weekly Digest', desc: 'Receive a weekly summary' },
-              ].map((item) => (
-                <div
-                  key={item.key}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '20px',
-                    backgroundColor: colors.inputBg,
-                    borderRadius: '8px',
-                    marginBottom: '12px',
-                    transition: 'background-color 0.3s ease',
-                  }}
-                >
-                  <div>
-                    <p style={{
-                      fontFamily: "'Rajdhani', sans-serif",
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: colors.text,
-                      marginBottom: '4px',
-                    }}>
-                      {item.label.toUpperCase()}
-                    </p>
-                    <p style={{ color: colors.textMuted, fontSize: '13px', margin: 0 }}>
-                      {item.desc}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => updateNotifications(item.key, !settings.notifications[item.key as keyof typeof settings.notifications])}
+                {/* Theme Picker */}
+                <div style={{ marginBottom: '32px' }}>
+                  <FieldLabel colors={colors}>THEME</FieldLabel>
+                  <div
                     style={{
-                      width: '52px',
-                      height: '28px',
-                      backgroundColor: settings.notifications[item.key as keyof typeof settings.notifications] ? '#FEC00F' : '#424242',
-                      borderRadius: '14px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      position: 'relative',
+                      display: 'grid',
+                      gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                      gap: '12px',
+                      marginTop: '12px',
                     }}
                   >
-                    <div style={{
-                      width: '22px',
-                      height: '22px',
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: '50%',
-                      position: 'absolute',
-                      top: '3px',
-                      left: settings.notifications[item.key as keyof typeof settings.notifications] ? '27px' : '3px',
-                      transition: 'all 0.2s',
-                    }} />
-                  </button>
+                    {themeOptions.map((opt) => {
+                      const Icon = opt.icon;
+                      const isSelected = settings.appearance.theme === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          onClick={() => updateAppearance('theme', opt.value)}
+                          style={{
+                            padding: '20px 16px',
+                            backgroundColor: isSelected
+                              ? 'rgba(254, 192, 15, 0.08)'
+                              : colors.inputBg,
+                            border: `2px solid ${isSelected ? colors.accent : colors.border}`,
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            transition: 'all 0.2s ease',
+                            position: 'relative',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.currentTarget.style.borderColor = isDark ? '#424242' : '#ccc';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.currentTarget.style.borderColor = colors.border;
+                          }}
+                        >
+                          <Icon
+                            size={28}
+                            color={isSelected ? colors.accent : colors.textMuted}
+                            style={{ marginBottom: '10px' }}
+                          />
+                          <p
+                            style={{
+                              fontFamily: "'Rajdhani', sans-serif",
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: isSelected ? colors.text : colors.textMuted,
+                              margin: '0 0 4px 0',
+                              letterSpacing: '0.5px',
+                            }}
+                          >
+                            {opt.label.toUpperCase()}
+                          </p>
+                          <p
+                            style={{
+                              color: colors.textMuted,
+                              fontSize: '12px',
+                              margin: 0,
+                            }}
+                          >
+                            {opt.desc}
+                          </p>
+                          {isSelected && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: '10px',
+                                right: '10px',
+                                width: '22px',
+                                height: '22px',
+                                backgroundColor: colors.accent,
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <Check size={13} color="#212121" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
 
-          {/* Security Section */}
-          {activeSection === 'security' && (
-            <div>
-              <h2 style={{
-                fontFamily: "'Rajdhani', sans-serif",
-                fontSize: '20px',
-                fontWeight: 600,
-                color: colors.text,
-                marginBottom: '8px',
-                marginTop: 0,
-              }}>
-                SECURITY
-              </h2>
-              <p style={{ color: colors.textMuted, fontSize: '14px', marginBottom: '32px' }}>
-                Manage your security settings
-              </p>
+                {/* Accent Color */}
+                <div style={{ marginBottom: '32px' }}>
+                  <FieldLabel colors={colors}>ACCENT COLOR</FieldLabel>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
+                    {accentColors.map((color) => {
+                      const isSelected = settings.appearance.accentColor === color.value;
+                      return (
+                        <button
+                          key={color.value}
+                          onClick={() => updateAppearance('accentColor', color.value)}
+                          title={color.label}
+                          style={{
+                            width: '44px',
+                            height: '44px',
+                            backgroundColor: color.value,
+                            border: isSelected
+                              ? `3px solid ${colors.text}`
+                              : '3px solid transparent',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          {isSelected && <Check size={18} color="#212121" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-              <div style={{
-                padding: '24px',
-                backgroundColor: colors.inputBg,
-                borderRadius: '12px',
-                marginBottom: '24px',
-                transition: 'background-color 0.3s ease',
-              }}>
-                <h3 style={{
-                  fontFamily: "'Rajdhani', sans-serif",
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  color: colors.text,
-                  marginBottom: '16px',
-                  marginTop: 0,
-                }}>
-                  CHANGE PASSWORD
-                </h3>
-                <div style={{ display: 'grid', gap: '16px' }}>
-                  <input type="password" placeholder="Current password" style={inputStyle} />
-                  <input type="password" placeholder="New password" style={inputStyle} />
-                  <input type="password" placeholder="Confirm new password" style={inputStyle} />
-                  <button style={{
-                    width: 'fit-content',
-                    padding: '12px 24px',
-                    backgroundColor: '#FEC00F',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#212121',
-                    fontSize: '13px',
-                    fontFamily: "'Rajdhani', sans-serif",
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}>
-                    UPDATE PASSWORD
-                  </button>
+                {/* Font Size */}
+                <div>
+                  <FieldLabel colors={colors}>FONT SIZE</FieldLabel>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                    {(['small', 'medium', 'large'] as const).map((size) => {
+                      const isSelected = settings.appearance.fontSize === size;
+                      return (
+                        <button
+                          key={size}
+                          onClick={() => updateAppearance('fontSize', size)}
+                          style={{
+                            padding: '10px 24px',
+                            backgroundColor: isSelected ? colors.accent : colors.inputBg,
+                            border: `1px solid ${isSelected ? colors.accent : colors.border}`,
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            fontFamily: "'Rajdhani', sans-serif",
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            color: isSelected ? '#212121' : colors.text,
+                            letterSpacing: '0.5px',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.currentTarget.style.borderColor = isDark ? '#424242' : '#ccc';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.currentTarget.style.borderColor = isSelected ? colors.accent : colors.border;
+                          }}
+                        >
+                          {size.toUpperCase()}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div style={{
-                padding: '24px',
-                backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                border: '1px solid #DC2626',
-                borderRadius: '12px',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                  <AlertTriangle size={24} color="#DC2626" />
-                  <h3 style={{
-                    fontFamily: "'Rajdhani', sans-serif",
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    color: '#DC2626',
-                    margin: 0,
-                  }}>
-                    DANGER ZONE
-                  </h3>
+            {/* ─── Notifications ────────────────────────────────────────────── */}
+            {activeSection === 'notifications' && (
+              <div>
+                <SectionHeader
+                  title="NOTIFICATIONS"
+                  desc="Configure how you receive notifications"
+                  colors={colors}
+                />
+
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {[
+                    { key: 'emailNotifications', label: 'Email Notifications', desc: 'Receive notifications via email' },
+                    { key: 'codeGenComplete', label: 'Code Generation Complete', desc: 'Notify when AFL code generation finishes' },
+                    { key: 'backtestComplete', label: 'Backtest Analysis Complete', desc: 'Notify when backtest analysis finishes' },
+                    { key: 'weeklyDigest', label: 'Weekly Digest', desc: 'Receive a weekly summary' },
+                  ].map((item) => {
+                    const isOn = settings.notifications[item.key as keyof typeof settings.notifications];
+                    return (
+                      <div
+                        key={item.key}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '18px 20px',
+                          backgroundColor: colors.inputBg,
+                          borderRadius: '12px',
+                          transition: 'background-color 0.2s ease',
+                          gap: '16px',
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p
+                            style={{
+                              fontFamily: "'Rajdhani', sans-serif",
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: colors.text,
+                              margin: '0 0 3px 0',
+                              letterSpacing: '0.3px',
+                            }}
+                          >
+                            {item.label.toUpperCase()}
+                          </p>
+                          <p style={{ color: colors.textMuted, fontSize: '13px', margin: 0, lineHeight: 1.4 }}>
+                            {item.desc}
+                          </p>
+                        </div>
+                        {/* Toggle */}
+                        <button
+                          onClick={() => updateNotifications(item.key, !isOn)}
+                          aria-label={`Toggle ${item.label}`}
+                          style={{
+                            width: '48px',
+                            height: '26px',
+                            backgroundColor: isOn ? colors.accent : isDark ? '#424242' : '#D1D5DB',
+                            borderRadius: '13px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            transition: 'background-color 0.2s ease',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              backgroundColor: '#FFFFFF',
+                              borderRadius: '50%',
+                              position: 'absolute',
+                              top: '3px',
+                              left: isOn ? '25px' : '3px',
+                              transition: 'left 0.2s ease',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                            }}
+                          />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-                <p style={{ color: '#E0E0E0', fontSize: '13px', marginBottom: '16px' }}>
-                  Once you delete your account, there is no going back.
-                </p>
-                <button
-                  onClick={handleDeleteAccount}
+              </div>
+            )}
+
+            {/* ─── Security ─────────────────────────────────────────────────── */}
+            {activeSection === 'security' && (
+              <div>
+                <SectionHeader
+                  title="SECURITY"
+                  desc="Manage your security settings"
+                  colors={colors}
+                />
+
+                {/* Change Password */}
+                <div
                   style={{
-                    padding: '12px 24px',
-                    backgroundColor: 'transparent',
-                    border: '1px solid #DC2626',
-                    borderRadius: '8px',
-                    color: '#DC2626',
-                    fontSize: '13px',
-                    fontFamily: "'Rajdhani', sans-serif",
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
+                    padding: '24px',
+                    backgroundColor: colors.inputBg,
+                    borderRadius: '14px',
+                    marginBottom: '20px',
+                    transition: 'background-color 0.2s ease',
                   }}
                 >
-                  <Trash2 size={16} />
-                  DELETE ACCOUNT
-                </button>
-              </div>
-            </div>
-          )}
+                  <p
+                    style={{
+                      fontFamily: "'Rajdhani', sans-serif",
+                      fontSize: '15px',
+                      fontWeight: 600,
+                      color: colors.text,
+                      margin: '0 0 20px 0',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    CHANGE PASSWORD
+                  </p>
+                  <div style={{ display: 'grid', gap: '14px', maxWidth: '480px' }}>
+                    <StyledInput type="password" placeholder="Current password" colors={colors} isDark={isDark} />
+                    <StyledInput type="password" placeholder="New password" colors={colors} isDark={isDark} />
+                    <StyledInput type="password" placeholder="Confirm new password" colors={colors} isDark={isDark} />
+                    <button
+                      style={{
+                        width: 'fit-content',
+                        padding: '10px 24px',
+                        backgroundColor: colors.accent,
+                        border: 'none',
+                        borderRadius: '10px',
+                        color: '#212121',
+                        fontSize: '13px',
+                        fontFamily: "'Rajdhani', sans-serif",
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        letterSpacing: '0.5px',
+                        transition: 'opacity 0.2s',
+                        marginTop: '4px',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+                    >
+                      UPDATE PASSWORD
+                    </button>
+                  </div>
+                </div>
 
-          {/* Save Button */}
-          <div style={{
-            marginTop: '32px',
-            paddingTop: '24px',
-            borderTop: `1px solid ${colors.border}`,
-            display: 'flex',
-            justifyContent: 'flex-end',
-          }}>
-            <button
-              onClick={handleSave}
+                {/* Danger Zone */}
+                <div
+                  style={{
+                    padding: '24px',
+                    backgroundColor: 'rgba(220, 38, 38, 0.06)',
+                    border: '1px solid rgba(220, 38, 38, 0.2)',
+                    borderRadius: '14px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                    <AlertTriangle size={20} color="#DC2626" />
+                    <p
+                      style={{
+                        fontFamily: "'Rajdhani', sans-serif",
+                        fontSize: '15px',
+                        fontWeight: 600,
+                        color: '#DC2626',
+                        margin: 0,
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      DANGER ZONE
+                    </p>
+                  </div>
+                  <p
+                    style={{
+                      color: colors.textMuted,
+                      fontSize: '13px',
+                      marginBottom: '16px',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Once you delete your account, there is no going back. All your data will be permanently removed.
+                  </p>
+                  <button
+                    onClick={handleDeleteAccount}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: 'transparent',
+                      border: '1px solid rgba(220, 38, 38, 0.4)',
+                      borderRadius: '10px',
+                      color: '#DC2626',
+                      fontSize: '13px',
+                      fontFamily: "'Rajdhani', sans-serif",
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s ease',
+                      letterSpacing: '0.5px',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.1)';
+                      e.currentTarget.style.borderColor = '#DC2626';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.borderColor = 'rgba(220, 38, 38, 0.4)';
+                    }}
+                  >
+                    <Trash2 size={15} />
+                    DELETE ACCOUNT
+                  </button>
+                </div>
+
+                {/* Mobile logout */}
+                {isMobile && (
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      marginTop: '20px',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '10px',
+                      padding: '12px 16px',
+                      backgroundColor: 'transparent',
+                      border: '1px solid rgba(220, 38, 38, 0.3)',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <LogOut size={18} color="#DC2626" />
+                    <span
+                      style={{
+                        fontFamily: "'Rajdhani', sans-serif",
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: '#DC2626',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      LOGOUT
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* ─── Save Footer ──────────────────────────────────────────────── */}
+            <div
               style={{
-                padding: '14px 32px',
-                backgroundColor: saved ? '#2D7F3E' : '#FEC00F',
-                border: 'none',
-                borderRadius: '8px',
-                color: saved ? '#FFFFFF' : '#212121',
-                fontSize: '14px',
-                fontFamily: "'Rajdhani', sans-serif",
-                fontWeight: 600,
-                cursor: 'pointer',
+                marginTop: '32px',
+                paddingTop: '20px',
+                borderTop: `1px solid ${colors.border}`,
                 display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                justifyContent: 'flex-end',
               }}
             >
-              {saved ? <Check size={18} /> : <Save size={18} />}
-              {saved ? 'SAVED!' : 'SAVE CHANGES'}
-            </button>
+              <button
+                onClick={handleSave}
+                style={{
+                  padding: '12px 28px',
+                  backgroundColor: saved ? '#22c55e' : colors.accent,
+                  border: 'none',
+                  borderRadius: '10px',
+                  color: saved ? '#FFFFFF' : '#212121',
+                  fontSize: '14px',
+                  fontFamily: "'Rajdhani', sans-serif",
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  letterSpacing: '0.5px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: saved ? 'none' : '0 2px 8px rgba(254, 192, 15, 0.25)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!saved) e.currentTarget.style.opacity = '0.9';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
+              >
+                {saved ? <Check size={17} /> : <Save size={17} />}
+                {saved ? 'SAVED!' : 'SAVE CHANGES'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -897,5 +1042,141 @@ export function SettingsPage() {
   );
 }
 
+// ─── Reusable sub-components ────────────────────────────────────────────────────
+
+function SectionHeader({
+  title,
+  desc,
+  colors,
+}: {
+  title: string;
+  desc: string;
+  colors: Record<string, string>;
+}) {
+  return (
+    <div style={{ marginBottom: '28px' }}>
+      <h2
+        style={{
+          fontFamily: "'Rajdhani', sans-serif",
+          fontSize: '20px',
+          fontWeight: 700,
+          color: colors.text,
+          margin: '0 0 6px 0',
+          letterSpacing: '0.5px',
+        }}
+      >
+        {title}
+      </h2>
+      <p style={{ color: colors.textMuted, fontSize: '14px', margin: 0, lineHeight: 1.5 }}>
+        {desc}
+      </p>
+    </div>
+  );
+}
+
+function FieldLabel({
+  children,
+  colors,
+}: {
+  children: React.ReactNode;
+  colors: Record<string, string>;
+}) {
+  return (
+    <span
+      style={{
+        display: 'block',
+        fontFamily: "'Rajdhani', sans-serif",
+        fontSize: '12px',
+        fontWeight: 600,
+        color: colors.text,
+        letterSpacing: '1px',
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function FieldGroup({
+  label,
+  badge,
+  children,
+  colors,
+}: {
+  label: string;
+  badge?: { text: string; color: string };
+  children: React.ReactNode;
+  colors: Record<string, string>;
+}) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+        <FieldLabel colors={colors}>{label}</FieldLabel>
+        {badge && (
+          <span
+            style={{
+              padding: '1px 8px',
+              borderRadius: '5px',
+              fontSize: '10px',
+              fontWeight: 700,
+              fontFamily: "'Rajdhani', sans-serif",
+              letterSpacing: '0.5px',
+              color: badge.color,
+              backgroundColor:
+                badge.color === '#22c55e'
+                  ? 'rgba(34, 197, 94, 0.12)'
+                  : colors.inputBg,
+            }}
+          >
+            {badge.text}
+          </span>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function StyledInput({
+  colors,
+  isDark,
+  style,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & {
+  colors: Record<string, string>;
+  isDark: boolean;
+  style?: React.CSSProperties;
+}) {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <input
+      {...props}
+      onFocus={(e) => {
+        setFocused(true);
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        setFocused(false);
+        props.onBlur?.(e);
+      }}
+      style={{
+        width: '100%',
+        height: '46px',
+        padding: '0 16px',
+        backgroundColor: colors.inputBg,
+        border: `1px solid ${focused ? '#FEC00F' : colors.border}`,
+        borderRadius: '10px',
+        color: colors.text,
+        fontSize: '14px',
+        fontFamily: "'Quicksand', sans-serif",
+        outline: 'none',
+        boxSizing: 'border-box' as const,
+        transition: 'border-color 0.2s ease',
+        ...style,
+      }}
+    />
+  );
+}
 
 export default SettingsPage;
