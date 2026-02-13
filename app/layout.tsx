@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Rajdhani, Quicksand } from 'next/font/google';
+import { Quicksand, Rajdhani } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { FontSizeProvider } from '@/contexts/FontSizeContext';
@@ -7,16 +7,18 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { TabProvider } from '@/contexts/TabContext';
 import { Toaster } from 'sonner';
 
-const inter = Inter({ subsets: ['latin'] });
-const rajdhani = Rajdhani({ 
-  subsets: ['latin'],
-  weight: ['300', '500', '700'],
-  variable: '--font-rajdhani'
-});
 const quicksand = Quicksand({
   subsets: ['latin'],
-  weight: ['300', '500', '700'],
-  variable: '--font-quicksand'
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-quicksand',
+  display: 'swap',
+});
+
+const rajdhani = Rajdhani({
+  subsets: ['latin'],
+  weight: ['300', '500', '600', '700'],
+  variable: '--font-rajdhani',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -30,8 +32,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} ${rajdhani.variable} ${quicksand.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${quicksand.variable} ${rajdhani.variable}`}>
+      <body className={quicksand.className}>
         <ThemeProvider>
           <FontSizeProvider>
             <AuthProvider>

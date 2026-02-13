@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 type FontSize = 'small' | 'medium' | 'large';
 
@@ -19,7 +19,7 @@ export const useFontSize = () => {
   return context;
 };
 
-export const FontSizeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const FontSizeProvider = ({ children }: { children: ReactNode }) => {
   const [fontSize, setFontSizeState] = useState<FontSize>('medium');
 
   useEffect(() => {
