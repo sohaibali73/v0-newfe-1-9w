@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { storage } from '@/lib/storage';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -23,17 +24,17 @@ export const useTheme = () => {
   return context;
 };
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system');
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
   const [accentColor, setAccentColorState] = useState<string>('#FEC00F');
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
+    const savedTheme = storage.getItem('theme') as Theme;
     if (savedTheme) {
       setThemeState(savedTheme);
     }
-    const savedAccentColor = localStorage.getItem('accentColor');
+    const savedAccentColor = storage.getItem('accentColor');
     if (savedAccentColor) {
       setAccentColorState(savedAccentColor);
     }
@@ -68,12 +69,12 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem('theme', newTheme);
+    storage.setItem('theme', newTheme);
   };
 
   const setAccentColor = (color: string) => {
     setAccentColorState(color);
-    localStorage.setItem('accentColor', color);
+    storage.setItem('accentColor', color);
     // Apply to CSS variable for global use
     document.documentElement.style.setProperty('--accent-color', color);
   };
@@ -95,4 +96,4 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       {children}
     </ThemeContext.Provider>
   );
-};
+}

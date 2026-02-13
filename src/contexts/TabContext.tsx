@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
 interface TabState {
   [key: string]: {
@@ -27,7 +27,7 @@ export const useTabContext = () => {
   return context;
 };
 
-export const TabProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function TabProvider({ children }: { children: ReactNode }) {
   const [tabState, setTabState] = useState<TabState>({});
 
   const setActiveTab = useCallback((page: string, tab: string) => {
@@ -63,4 +63,4 @@ export const TabProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       {children}
     </TabContext.Provider>
   );
-};
+}

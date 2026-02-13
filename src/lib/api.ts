@@ -34,39 +34,26 @@ import {
   KnowledgeCategory,
   TrainingTypeInfo,
 } from '@/types/api';
+import { getApiUrl } from './env';
+import { storage } from './storage';
+import { logger } from './logger';
 
-// FIXED: Correct production URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
-  (process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:8000' 
-    : 'https://potomac-analyst-workbench-production.up.railway.app');
+const API_BASE_URL = getApiUrl();
 
 class APIClient {
   private token: string | null = null;
 
   constructor() {
-    try {
-      this.token = localStorage.getItem('auth_token');
-    } catch (e) {
-      this.token = null;
-    }
+    this.token = storage.getItem('auth_token');
   }
 
   private setToken(token: string) {
     this.token = token;
-    try {
-      localStorage.setItem('auth_token', token);
-    } catch (e) {
-      // Silently fail if localStorage is not available
-    }
+    storage.setItem('auth_token', token);
   }
 
   private getToken() {
-    try {
-      return localStorage.getItem('auth_token');
-    } catch (e) {
-      return null;
-    }
+    return storage.getItem('auth_token');
   }
 
   private async request<T>(
@@ -103,7 +90,7 @@ class APIClient {
 
     try {
       const url = `${API_BASE_URL}${endpoint}`;
-      console.log(`API Request: ${method} ${url}`);
+      logger.debug(`API Request: ${method} ${url}`);
       
       const response = await fetch(url, config);
 
@@ -111,13 +98,14 @@ class APIClient {
         const error = await response.json().catch(() => ({ 
           detail: `Request failed with status ${response.status}` 
         }));
+        logger.error(`API Error: ${method} ${endpoint}`, error);
         throw new Error(error.detail || error.message || `HTTP ${response.status}`);
       }
 
       return response.json();
     } catch (error) {
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        console.error('Network error - API server may be unavailable:', API_BASE_URL);
+        logger.error('Network error - API server may be unavailable', error, { url: API_BASE_URL });
         throw new Error(`Cannot connect to API server at ${API_BASE_URL}. Please check your internet connection or try again later.`);
       }
       throw error;

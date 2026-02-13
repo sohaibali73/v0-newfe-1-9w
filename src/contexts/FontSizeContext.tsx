@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { storage } from '@/lib/storage';
 
 type FontSize = 'small' | 'medium' | 'large';
 
@@ -19,11 +20,11 @@ export const useFontSize = () => {
   return context;
 };
 
-export const FontSizeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function FontSizeProvider({ children }: { children: React.ReactNode }) {
   const [fontSize, setFontSizeState] = useState<FontSize>('medium');
 
   useEffect(() => {
-    const savedSize = localStorage.getItem('fontSize') as FontSize;
+    const savedSize = storage.getItem('fontSize') as FontSize;
     if (savedSize) {
       setFontSizeState(savedSize);
       applyFontSize(savedSize);
@@ -47,7 +48,7 @@ export const FontSizeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setFontSize = (size: FontSize) => {
     setFontSizeState(size);
-    localStorage.setItem('fontSize', size);
+    storage.setItem('fontSize', size);
     applyFontSize(size);
   };
 
@@ -56,4 +57,4 @@ export const FontSizeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       {children}
     </FontSizeContext.Provider>
   );
-};
+}
