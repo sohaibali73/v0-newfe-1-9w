@@ -14,7 +14,6 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
-  Lock,
   Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,7 +30,6 @@ const navItems = [
   { name: 'KNOWLEDGE BASE', href: '/knowledge', icon: Database },
   { name: 'BACKTEST', href: '/backtest', icon: TrendingUp },
   { name: 'REVERSE ENGINEER', href: '/reverse-engineer', icon: Zap },
-  { name: 'ADMIN', href: '/admin', icon: Lock },
   { name: 'SETTINGS', href: '/settings', icon: Settings },
 ];
 

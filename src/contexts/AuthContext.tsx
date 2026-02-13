@@ -9,7 +9,6 @@ interface User {
   email: string;
   name?: string;
   nickname?: string;
-  is_admin?: boolean;
   created_at?: string;
 }
 
