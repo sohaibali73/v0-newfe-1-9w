@@ -222,7 +222,7 @@ export function SettingsPage() {
               <h1
                 style={{
                   fontFamily: "'Rajdhani', sans-serif",
-                  fontSize: isMobile ? '28px' : '40px',
+                  fontSize: isMobile ? '1.75rem' : '2.5rem',
                   fontWeight: 700,
                   color: colors.text,
                   letterSpacing: '1.5px',
@@ -237,7 +237,7 @@ export function SettingsPage() {
           <p
             style={{
               color: colors.textMuted,
-              fontSize: isMobile ? '14px' : '16px',
+              fontSize: isMobile ? '0.875rem' : '1rem',
               lineHeight: 1.7,
               maxWidth: '600px',
               margin: 0,
@@ -307,7 +307,7 @@ export function SettingsPage() {
                     <span
                       style={{
                         fontFamily: "'Rajdhani', sans-serif",
-                        fontSize: '13px',
+                        fontSize: '0.8125rem',
                         fontWeight: 600,
                         color: isActive ? '#212121' : colors.text,
                         letterSpacing: '0.5px',
@@ -349,7 +349,7 @@ export function SettingsPage() {
                   <span
                     style={{
                       fontFamily: "'Rajdhani', sans-serif",
-                      fontSize: '13px',
+                      fontSize: '0.8125rem',
                       fontWeight: 600,
                       color: '#DC2626',
                       letterSpacing: '0.5px',
@@ -396,7 +396,7 @@ export function SettingsPage() {
                     <span
                       style={{
                         fontFamily: "'Rajdhani', sans-serif",
-                        fontSize: '28px',
+                        fontSize: '1.75rem',
                         fontWeight: 700,
                         color: colors.accent,
                       }}
@@ -408,7 +408,7 @@ export function SettingsPage() {
                     <p
                       style={{
                         fontFamily: "'Rajdhani', sans-serif",
-                        fontSize: '18px',
+                        fontSize: '1.125rem',
                         fontWeight: 600,
                         color: colors.text,
                         margin: '0 0 4px 0',
@@ -416,7 +416,7 @@ export function SettingsPage() {
                     >
                       {settings.profile.name || 'Your Name'}
                     </p>
-                    <p style={{ color: colors.textMuted, fontSize: '13px', margin: 0 }}>
+                    <p style={{ color: colors.textMuted, fontSize: '0.8125rem', margin: 0 }}>
                       {settings.profile.email || 'your@email.com'}
                     </p>
                   </div>
@@ -463,7 +463,7 @@ export function SettingsPage() {
               </div>
             )}
 
-            {/* ─── API Keys ─────────────────────────────────────────────────── */}
+            {/* ─── API Keys ────────────��────────────────────────────────────── */}
             {activeSection === 'api-keys' && (
               <div>
                 <SectionHeader
@@ -485,7 +485,7 @@ export function SettingsPage() {
                   }}
                 >
                   <Shield size={18} color={colors.accent} style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <p style={{ color: colors.textMuted, fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ color: colors.textMuted, fontSize: '0.8125rem', lineHeight: 1.6, margin: 0 }}>
                     Your API keys are encrypted and stored securely. They are never shared or exposed to third parties.
                   </p>
                 </div>
@@ -527,7 +527,7 @@ export function SettingsPage() {
                         {showClaudeKey ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
-                    <p style={{ color: colors.textMuted, fontSize: '12px', marginTop: '8px' }}>
+                    <p style={{ color: colors.textMuted, fontSize: '0.75rem', marginTop: '8px' }}>
                       Get your key from{' '}
                       <a
                         href="https://console.anthropic.com/"
@@ -635,7 +635,7 @@ export function SettingsPage() {
                           <p
                             style={{
                               fontFamily: "'Rajdhani', sans-serif",
-                              fontSize: '14px',
+                              fontSize: '0.875rem',
                               fontWeight: 600,
                               color: isSelected ? colors.text : colors.textMuted,
                               margin: '0 0 4px 0',
@@ -647,7 +647,7 @@ export function SettingsPage() {
                           <p
                             style={{
                               color: colors.textMuted,
-                              fontSize: '12px',
+                              fontSize: '0.75rem',
                               margin: 0,
                             }}
                           >
@@ -727,7 +727,7 @@ export function SettingsPage() {
                             borderRadius: '10px',
                             cursor: 'pointer',
                             fontFamily: "'Rajdhani', sans-serif",
-                            fontSize: '13px',
+                            fontSize: '0.8125rem',
                             fontWeight: 600,
                             color: isSelected ? '#212121' : colors.text,
                             letterSpacing: '0.5px',
@@ -784,7 +784,7 @@ export function SettingsPage() {
                           <p
                             style={{
                               fontFamily: "'Rajdhani', sans-serif",
-                              fontSize: '14px',
+                              fontSize: '0.875rem',
                               fontWeight: 600,
                               color: colors.text,
                               margin: '0 0 3px 0',
@@ -793,7 +793,7 @@ export function SettingsPage() {
                           >
                             {item.label.toUpperCase()}
                           </p>
-                          <p style={{ color: colors.textMuted, fontSize: '13px', margin: 0, lineHeight: 1.4 }}>
+                          <p style={{ color: colors.textMuted, fontSize: '0.8125rem', margin: 0, lineHeight: 1.4 }}>
                             {item.desc}
                           </p>
                         </div>
@@ -856,7 +856,7 @@ export function SettingsPage() {
                   <p
                     style={{
                       fontFamily: "'Rajdhani', sans-serif",
-                      fontSize: '15px',
+                      fontSize: '0.9375rem',
                       fontWeight: 600,
                       color: colors.text,
                       margin: '0 0 20px 0',
@@ -877,7 +877,7 @@ export function SettingsPage() {
                         border: 'none',
                         borderRadius: '10px',
                         color: '#212121',
-                        fontSize: '13px',
+                        fontSize: '0.8125rem',
                         fontFamily: "'Rajdhani', sans-serif",
                         fontWeight: 600,
                         cursor: 'pointer',
@@ -907,7 +907,7 @@ export function SettingsPage() {
                     <p
                       style={{
                         fontFamily: "'Rajdhani', sans-serif",
-                        fontSize: '15px',
+                        fontSize: '0.9375rem',
                         fontWeight: 600,
                         color: '#DC2626',
                         margin: 0,
@@ -920,7 +920,7 @@ export function SettingsPage() {
                   <p
                     style={{
                       color: colors.textMuted,
-                      fontSize: '13px',
+                      fontSize: '0.8125rem',
                       marginBottom: '16px',
                       lineHeight: 1.5,
                     }}
@@ -935,7 +935,7 @@ export function SettingsPage() {
                       border: '1px solid rgba(220, 38, 38, 0.4)',
                       borderRadius: '10px',
                       color: '#DC2626',
-                      fontSize: '13px',
+                      fontSize: '0.8125rem',
                       fontFamily: "'Rajdhani', sans-serif",
                       fontWeight: 600,
                       cursor: 'pointer',
@@ -982,7 +982,7 @@ export function SettingsPage() {
                     <span
                       style={{
                         fontFamily: "'Rajdhani', sans-serif",
-                        fontSize: '13px',
+                        fontSize: '0.8125rem',
                         fontWeight: 600,
                         color: '#DC2626',
                         letterSpacing: '0.5px',
@@ -1013,7 +1013,7 @@ export function SettingsPage() {
                   border: 'none',
                   borderRadius: '10px',
                   color: saved ? '#FFFFFF' : '#212121',
-                  fontSize: '14px',
+                  fontSize: '0.875rem',
                   fontFamily: "'Rajdhani', sans-serif",
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -1058,7 +1058,7 @@ function SectionHeader({
       <h2
         style={{
           fontFamily: "'Rajdhani', sans-serif",
-          fontSize: '20px',
+          fontSize: '1.25rem',
           fontWeight: 700,
           color: colors.text,
           margin: '0 0 6px 0',
@@ -1067,7 +1067,7 @@ function SectionHeader({
       >
         {title}
       </h2>
-      <p style={{ color: colors.textMuted, fontSize: '14px', margin: 0, lineHeight: 1.5 }}>
+      <p style={{ color: colors.textMuted, fontSize: '0.875rem', margin: 0, lineHeight: 1.5 }}>
         {desc}
       </p>
     </div>
@@ -1086,7 +1086,7 @@ function FieldLabel({
       style={{
         display: 'block',
         fontFamily: "'Rajdhani', sans-serif",
-        fontSize: '12px',
+        fontSize: '0.75rem',
         fontWeight: 600,
         color: colors.text,
         letterSpacing: '1px',
@@ -1117,7 +1117,7 @@ function FieldGroup({
             style={{
               padding: '1px 8px',
               borderRadius: '5px',
-              fontSize: '10px',
+              fontSize: '0.625rem',
               fontWeight: 700,
               fontFamily: "'Rajdhani', sans-serif",
               letterSpacing: '0.5px',
@@ -1168,7 +1168,7 @@ function StyledInput({
         border: `1px solid ${focused ? '#FEC00F' : colors.border}`,
         borderRadius: '10px',
         color: colors.text,
-        fontSize: '14px',
+        fontSize: '0.875rem',
         fontFamily: "'Quicksand', sans-serif",
         outline: 'none',
         boxSizing: 'border-box' as const,
