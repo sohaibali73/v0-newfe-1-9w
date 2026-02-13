@@ -58,7 +58,7 @@ export function WebsitePreview(props: WebsitePreviewProps) {
   const title = props.title || props.og_title || '';
   const description = props.description || props.og_description || '';
   const image = props.og_image || props.screenshot_url || props.image || '';
-  const domain = props.domain || (url ? new URL(url).hostname : '');
+  const domain = props.domain || (() => { try { return url ? new URL(url).hostname : ''; } catch { return ''; } })();
   const techs = props.tech_stack || props.technologies || [];
 
   if (props.success === false && props.error) {

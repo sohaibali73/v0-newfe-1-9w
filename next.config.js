@@ -1,5 +1,3 @@
-const path = require('path');
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -46,27 +44,9 @@ const nextConfig = {
     ];
   },
   
-  // Configure webpack for better Windows compatibility
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Configure cache for Windows
-    config.cache = {
-      type: 'filesystem',
-      cacheDirectory: path.resolve('.next/cache/webpack'),
-      buildDependencies: {
-        config: [__filename],
-      },
-    };
-    
-    // Windows-specific optimizations
-    if (process.platform === 'win32') {
-      config.watchOptions = {
-        poll: 1000,
-        aggregateTimeout: 300,
-      };
-    }
-    
-    return config;
-  },
+  // Webpack customization removed — Turbopack (default in Next.js 16) does not
+  // support the webpack() callback.  The previous filesystem-cache and
+  // Windows-specific watchOptions were only relevant when running under Webpack.
 };
 
 module.exports = nextConfig;
